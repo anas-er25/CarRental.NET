@@ -1,0 +1,170 @@
+﻿@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<!-- Demandes en attente banner -->
+@if (Model.DemandesEnAttente > 0)
+{
+    <div style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1.5px solid #FDE68A;border-radius:var(--radius);padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;animation:fadeUp .3s ease">
+        <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:38px;height:38px;border-radius:10px;background:#FDE68A;display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#92400E;flex-shrink:0"><i class="fas fa-inbox"></i></div>
+            <div>
+                <div style="font-weight:800;color:#92400E">@Model.DemandesEnAttente demande(s) en attente de confirmation</div>
+                <div style="font-size:.8rem;color:#B45309">Ces demandes nécessitent votre action</div>
+            </div>
+        </div>
+        <a href="/AdminDemandes/Index?statut=EnAttente" style="background:#D97706;color:#fff;border:none;border-radius:var(--radius-sm);padding:9px 18px;font-size:.82rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:7px">
+            <i class="fas fa-eye"></i> Traiter maintenant
+        </a>
+    </div>
+}
+
+<!-- Hero greeting -->
+<div style="background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);border-radius:var(--radius);padding:28px 32px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;overflow:hidden;position:relative;animation:fadeUp .4s ease;">
+    <div style="position:absolute;top:-40px;right:80px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,107,43,.25),transparent 70%);pointer-events:none;"></div>
+    <div style="position:absolute;bottom:-60px;right:-20px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,255,255,.06),transparent 70%);pointer-events:none;"></div>
+    <div>
+        <div style="font-size:.8rem;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Bienvenue</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:800;color:#fff;line-height:1.2;">Tableau de Bord</div>
+        <div style="font-size:.88rem;color:rgba(255,255,255,.55);margin-top:6px;">@DateTime.Now.ToString("dddd dd MMMM yyyy")</div>
+    </div>
+    <div style="text-align:right;">
+        <div style="font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:800;color:var(--orange-light);">@Model.RevenusTotal.ToString("N0")<span style="font-size:1rem;font-weight:600;opacity:.7;"> DH</span></div>
+        <div style="font-size:.78rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.06em;">Revenus cumulés</div>
+    </div>
+</div>
+
+<!-- Stats row -->
+<div class="row g-3 mb-4">
+    @{
+        var stats = new[] {
+            new { Val=Model.TotalVoitures.ToString(), Lbl="Total Voitures", Icon="fas fa-car-side", Bg="#EEF2FF", Ic="#6366F1", Delay="s1" },
+            new { Val=Model.VoituresDisponibles.ToString(), Lbl="Disponibles", Icon="fas fa-check-circle", Bg="#ECFDF5", Ic="#059669", Delay="s2" },
+            new { Val=Model.VoituresLouees.ToString(), Lbl="En location", Icon="fas fa-key", Bg="#FFF7ED", Ic=@"var(--orange)", Delay="s3" },
+            new { Val=Model.TotalClients.ToString(), Lbl="Clients", Icon="fas fa-users", Bg="#F0FDF4", Ic="#16A34A", Delay="s4" },
+            new { Val=Model.LocationsEnCours.ToString(), Lbl="Locations actives", Icon="fas fa-file-contract", Bg="#FFFBEB", Ic="#D97706", Delay="s5" },
+            new { Val=Model.RevenusMois.ToString("N0")+" DH", Lbl="Revenus ce mois", Icon="fas fa-chart-line", Bg="#FEF2F2", Ic="#DC2626", Delay="s6" }
+        };
+    }
+    @foreach (var s in stats)
+    {
+        <div class="col-6 col-lg-2">
+            <div class="stat-card @s.Delay">
+                <div class="stat-icon" style="background:@s.Bg;color:@s.Ic;">
+                    <i class="@s.Icon"></i>
+                </div>
+                <div class="stat-value" style="font-size:1.5rem;">@s.Val</div>
+                <div class="stat-label">@s.Lbl</div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="row g-3">
+    <!-- Recent locations -->
+    <div class="col-lg-8">
+        <div class="card" style="animation:fadeUp .6s ease;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:30px;height:30px;background:#EEF2FF;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#6366F1;font-size:.8rem;">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    Dernières Locations
+                </div>
+                <a href="/Location/Index" class="btn-ghost" style="font-size:.78rem;padding:6px 12px;">Voir tout →</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr><th>Client</th><th>Voiture</th><th>Période</th><th>Total</th><th>Statut</th></tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.DernieresLocations.Any())
+                        {
+                            <tr><td colspan="5"><div class="empty-state"><i class="fas fa-file-contract"></i><p>Aucune location</p></div></td></tr>
+                        }
+                        @foreach (var loc in Model.DernieresLocations)
+                        {
+                            <tr>
+                                <td>
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#ff8c3a);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.72rem;color:#fff;flex-shrink:0;">
+                                            @loc.Client?.Prenom[0]@loc.Client?.Nom[0]
+                                        </div>
+                                        <span style="font-weight:700;">@loc.Client?.NomComplet</span>
+                                    </div>
+                                </td>
+                                <td style="color:var(--gray-600);">@loc.Voiture?.Marque @loc.Voiture?.Modele</td>
+                                <td style="font-size:.8rem;color:var(--gray-400);">@loc.DateDebut.ToString("dd/MM") → @loc.DateFin.ToString("dd/MM/yy")</td>
+                                <td>
+                                    <span style="font-family:'Playfair Display',serif;font-weight:700;color:var(--orange);">@loc.TotalAvecDommage.ToString("N0") DH</span>
+                                </td>
+                                <td>
+                                    @if (loc.Statut == "EnCours")
+                                    {
+                                        <span class="badge-pill bp-yellow">En cours</span>
+                                    }
+                                    else if (loc.Statut == "Terminée")
+                                    {
+
+                                        <span class="badge-pill bp-green">Terminée</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="badge-pill bp-gray">Annulée</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available cars -->
+    <div class="col-lg-4">
+        <div class="card h-100" style="animation:fadeUp .65s ease;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:30px;height:30px;background:#ECFDF5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#059669;font-size:.8rem;">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    Voitures Disponibles
+                </div>
+                <span class="badge-pill bp-green">@Model.VoituresDisponibles dispo</span>
+            </div>
+            <div style="padding:16px;">
+                @if (!Model.VoituresDispoList.Any())
+                {
+                    <div class="empty-state"><i class="fas fa-car"></i><p>Aucune voiture dispo</p></div>
+                }
+                @foreach (var v in Model.VoituresDispoList)
+                {
+                    <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;border:1px solid var(--gray-100);margin-bottom:8px;transition:all .2s ease;" onmouseenter="this.style.borderColor='var(--orange)';this.style.background='#FFF7ED'" onmouseleave="this.style.borderColor='var(--gray-100)';this.style.background='transparent'">
+                        <div style="width:44px;height:44px;border-radius:10px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                            @if (v.ImagePrincipale != null)
+                            {
+                                <img src="@v.ImagePrincipale" style="width:100%;height:100%;object-fit:cover;" />
+                            }
+                            else
+                            {
+                                <i class="fas fa-car" style="color:var(--gray-400);font-size:1.1rem;"></i>
+                            }
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-weight:700;font-size:.88rem;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">@v.Marque @v.Modele</div>
+                            <div style="font-size:.72rem;color:var(--gray-400);">@v.Annee · @v.Categorie</div>
+                        </div>
+                        <div style="font-family:'Playfair Display',serif;font-weight:700;color:var(--orange);font-size:.92rem;white-space:nowrap;">@v.PrixParJour.ToString("N0") <span style="font-size:.65rem;font-weight:400;">DH/j</span></div>
+                    </div>
+                }
+                <a href="/Location/Create" class="btn-primary-custom w-100 mt-2" style="justify-content:center;">
+                    <i class="fas fa-plus"></i> Nouvelle location
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

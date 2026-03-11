@@ -1,0 +1,123 @@
+﻿@model List<CarRental.Models.IncidentVehicule>
+@{
+    ViewData["Title"] = "Historique des incidents";
+    var voiture = ViewBag.Voiture as CarRental.Models.Voiture;
+    var client = ViewBag.Client as CarRental.Models.Client;
+}
+
+<div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+    <a href="javascript:history.back()" style="width:38px;height:38px;border-radius:10px;background:var(--gray-100);border:1px solid var(--gray-200);display:flex;align-items:center;justify-content:center;color:var(--gray-600);text-decoration:none;font-size:.85rem" onmouseenter="this.style.background='var(--gray-200)'" onmouseleave="this.style.background='var(--gray-100)'">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;color:var(--navy)">
+            Historique des incidents
+            @if (voiture != null)
+            {
+                <span style="color:var(--orange)"> — @voiture.Marque @voiture.Modele</span>
+            }
+            @if (client != null)
+            {
+                <span style="color:var(--orange)"> — @client.NomComplet</span>
+            }
+        </div>
+        <div style="font-size:.82rem;color:var(--gray-400)">@Model.Count incident(s) enregistré(s)</div>
+    </div>
+</div>
+
+<!-- Stats -->
+@if (Model.Any())
+{
+    var totalFrais = Model.Sum(i => i.FraisSupplementaires);
+    var totalRembourse = Model.Where(i => i.EstRembourse).Sum(i => i.FraisSupplementaires);
+    <div class="row g-3 mb-4">
+        @foreach (var (val, lbl, bg, col) in new[]{
+            (Model.Count.ToString(), "Total incidents", "#EEF2FF","#6366F1"),
+            (totalFrais.ToString("N0")+" DH", "Frais totaux", "#FEF2F2","#DC2626"),
+            (totalRembourse.ToString("N0")+" DH", "Remboursé", "#ECFDF5","#059669"),
+            ((totalFrais-totalRembourse).ToString("N0")+" DH", "En attente", "#FFFBEB","#D97706"),
+        })
+        {
+            <div class="col-6 col-md-3">
+                <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm)">
+                    <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;color:@col">@val</div>
+                    <div style="font-size:.72rem;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.04em;margin-top:4px">@lbl</div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div style="text-align:center;padding:60px;color:var(--gray-400)">
+            <i class="fas fa-car-side" style="font-size:2.5rem;opacity:.2;display:block;margin-bottom:14px"></i>
+            <div style="font-weight:700">Aucun incident enregistré</div>
+            <div style="font-size:.85rem;margin-top:6px">Ce véhicule n'a aucun incident dans son historique.</div>
+        </div>
+    </div>
+}
+else
+{
+    <div style="display:flex;flex-direction:column;gap:10px">
+        @foreach (var inc in Model)
+        {
+            var (iconCls, borderCol, bgCol, textCol) = inc.TypeIncident switch
+            {
+                "Accident" => ("fas fa-car-burst", "#FECACA", "#FEF2F2", "#DC2626"),
+                "Rayure" => ("fas fa-paint-brush", "#FDE68A", "#FFFBEB", "#D97706"),
+                "BrisDeGlace" => ("fas fa-glass-water-droplet", "#BAE6FD", "#EFF6FF", "#0284C7"),
+                "DeteriorationInterieure" => ("fas fa-couch", "#DDD6FE", "#F5F3FF", "#7C3AED"),
+                "RetourTardif" => ("fas fa-clock", "#FECACA", "#FEF2F2", "#DC2626"),
+                _ => ("fas fa-exclamation", "#E5E7EB", "#F9FAFB", "#6B7280")
+            };
+            <div style="background:var(--white);border:1px solid @borderCol;border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow-sm);display:flex;gap:16px;align-items:flex-start">
+                <!-- Icon -->
+                <div style="width:44px;height:44px;border-radius:12px;background:@bgCol;display:flex;align-items:center;justify-content:center;font-size:1rem;color:@textCol;flex-shrink:0">
+                    <i class="@iconCls"></i>
+                </div>
+                <!-- Content -->
+                <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">
+                        <div style="font-weight:800;font-size:.95rem;color:var(--navy)">@inc.TypeIncident</div>
+                        <span class="badge-pill @(inc.EstRembourse ? "bp-green" : "bp-red")">@(inc.EstRembourse ? "Remboursé" : "Non remboursé")</span>
+                        <span style="font-size:.72rem;color:var(--gray-400);margin-left:auto"><i class="fas fa-calendar me-1"></i>@inc.DateIncident.ToString("dd/MM/yyyy")</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(inc.Description))
+                    {
+                        <div style="font-size:.85rem;color:var(--gray-600);margin-bottom:8px">@inc.Description</div>
+                    }
+                    <div style="display:flex;gap:16px;flex-wrap:wrap">
+                        @if (inc.FraisSupplementaires > 0)
+                        {
+                            <div style="font-size:.82rem;font-weight:700;color:#DC2626">
+                                <i class="fas fa-euro-sign me-1"></i>Frais : @inc.FraisSupplementaires.ToString("N0") DH
+                            </div>
+                        }
+                        @if (inc.Location != null)
+                        {
+                            <a href="/Location/Details/@inc.LocationId" style="font-size:.78rem;font-weight:700;color:var(--orange);text-decoration:none">
+                                <i class="fas fa-file-contract me-1"></i>Location #@inc.LocationId
+                            </a>
+                        }
+                        @if (inc.Client != null)
+                        {
+                            <a href="/Client/Details/@inc.ClientId" style="font-size:.78rem;font-weight:700;color:var(--navy);text-decoration:none">
+                                <i class="fas fa-user me-1"></i>@inc.Client.NomComplet
+                            </a>
+                        }
+                    </div>
+                    @if (!string.IsNullOrEmpty(inc.PhotoUrl))
+                    {
+                        <div style="margin-top:10px">
+                            <a href="@inc.PhotoUrl" target="_blank">
+                                <img src="@inc.PhotoUrl" style="height:80px;border-radius:8px;object-fit:cover;border:1px solid var(--gray-200)" alt="Photo incident" />
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,171 @@
+﻿@model Location
+@{
+    ViewData["Title"] = "Détails location";
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-header-title">Location #@Model.Id</div>
+        <div class="page-header-sub">Créée le @Model.DateCreation.ToString("dd MMMM yyyy")</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+        @if (Model.Statut == "EnCours")
+        {
+            <span class="badge-pill bp-yellow">En cours</span>
+        }
+        else if (Model.Statut == "Terminée")
+        {
+
+            <span class="badge-pill bp-green">Terminée</span>
+        }
+        else
+        {
+
+            <span class="badge-pill bp-gray">Annulée</span>
+        }
+        <a href="/Location/Index" class="btn-ghost"><i class="fas fa-arrow-left"></i> Retour</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card mb-4">
+            <div class="card-header"><i class="fas fa-user" style="color:var(--orange);margin-right:8px;"></i>Client</div>
+            <div class="card-body" style="display:flex;align-items:center;gap:16px;">
+                <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy-light));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:800;font-size:1.1rem;color:#fff;flex-shrink:0;">
+                    @Model.Client?.Prenom[0]@Model.Client?.Nom[0]
+                </div>
+                <div>
+                    <div style="font-weight:800;font-size:1rem;color:var(--navy);">@Model.Client?.NomComplet</div>
+                    <div style="font-size:.82rem;color:var(--gray-400);">@Model.Client?.CIN · @Model.Client?.Telephone · @Model.Client?.Email</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><i class="fas fa-car" style="color:var(--orange);margin-right:8px;"></i>Voiture</div>
+            <div class="card-body" style="display:flex;align-items:center;gap:16px;">
+                <div style="width:72px;height:56px;border-radius:10px;overflow:hidden;background:var(--gray-100);flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                    @if (Model.Voiture?.ImagePrincipale != null)
+                    {
+                        <img src="@Model.Voiture.ImagePrincipale" style="width:100%;height:100%;object-fit:cover;" />
+                    }
+                    else
+                    {
+
+                        <i class="fas fa-car" style="font-size:1.4rem;color:var(--gray-400);"></i>
+                    }
+                </div>
+                <div>
+                    <div style="font-weight:800;font-size:1rem;color:var(--navy);">@Model.Voiture?.Marque @Model.Voiture?.Modele</div>
+                    <div style="font-size:.82rem;color:var(--gray-400);">@Model.Voiture?.Immatriculation · @Model.Voiture?.Categorie · @Model.Voiture?.PrixParJour.ToString("N0") DH/j</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><i class="fas fa-calendar" style="color:var(--orange);margin-right:8px;"></i>Période</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-4">
+                        <div style="text-align:center;background:var(--gray-50);border-radius:10px;padding:14px;">
+                            <div style="font-size:.68rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;margin-bottom:4px;">Début</div>
+                            <div style="font-weight:800;color:var(--navy);">@Model.DateDebut.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div style="text-align:center;background:var(--gray-50);border-radius:10px;padding:14px;">
+                            <div style="font-size:.68rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;margin-bottom:4px;">Fin</div>
+                            <div style="font-weight:800;color:var(--navy);">@Model.DateFin.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div style="text-align:center;background:#EEF2FF;border-radius:10px;padding:14px;">
+                            <div style="font-size:.68rem;font-weight:800;color:#6366F1;text-transform:uppercase;margin-bottom:4px;">Durée</div>
+                            <div style="font-weight:800;color:#4338CA;">@Model.NombreJours jours</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Remarques))
+        {
+            <div class="card mb-4">
+                <div class="card-header"><i class="fas fa-sticky-note" style="color:var(--orange);margin-right:8px;"></i>Remarques</div>
+                <div class="card-body" style="color:var(--gray-600);font-size:.9rem;">@Model.Remarques</div>
+            </div>
+        }
+    </div>
+
+    <div class="col-lg-5">
+        <!-- Financial summary -->
+        <div class="card mb-4">
+            <div class="card-header"><i class="fas fa-receipt" style="color:var(--orange);margin-right:8px;"></i>Récapitulatif financier</div>
+            <div class="card-body" style="padding:20px;">
+                <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-100);">
+                    <span style="font-size:.85rem;color:var(--gray-600);">Prix location (@Model.NombreJours j × @Model.Voiture?.PrixParJour.ToString("N0") DH)</span>
+                    <span style="font-weight:700;color:var(--navy);">@Model.PrixTotal.ToString("N0") DH</span>
+                </div>
+
+                @if (Model.ADommage && Model.MontantDommage > 0)
+                {
+                    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-100);">
+                        <span style="font-size:.85rem;color:#DC2626;display:flex;align-items:center;gap:6px;"><i class="fas fa-car-crash"></i> Dommages</span>
+                        <span style="font-weight:700;color:#DC2626;">+@Model.MontantDommage.Value.ToString("N0") DH</span>
+                    </div>
+                }
+
+                <div style="background:linear-gradient(135deg,var(--navy),var(--navy-light));border-radius:10px;padding:16px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:.8rem;font-weight:800;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.05em;">Total général</span>
+                    <span style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:800;color:var(--orange-light);">@Model.TotalAvecDommage.ToString("N0") DH</span>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.ADommage)
+        {
+            <div class="card mb-4" style="border:1.5px solid #FDE68A;">
+                <div class="card-header" style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-color:#FDE68A;color:#92400E;">
+                    <i class="fas fa-exclamation-triangle" style="color:#D97706;margin-right:8px;"></i>Dommages signalés
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.DescriptionDommage))
+                    {
+                        <p style="font-size:.88rem;color:#78350F;margin-bottom:12px;">@Model.DescriptionDommage</p>
+                    }
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-size:.82rem;font-weight:700;color:#92400E;">Statut remboursement</span>
+                        @if (Model.DommageRembourse)
+                        {
+                            <span class="badge-pill bp-green"><i class="fas fa-check"></i> Remboursé</span>
+                        }
+                        else
+                        {
+
+                            <span class="badge-pill bp-red"><i class="fas fa-clock"></i> En attente</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Actions -->
+        <div class="card">
+            <div class="card-body" style="padding:16px;">
+                @if (Model.Statut == "EnCours")
+                {
+                    <a href="/Location/Retour/@Model.Id" class="btn-success-soft w-100" style="justify-content:center;padding:12px;margin-bottom:8px;">
+                        <i class="fas fa-undo"></i> Enregistrer le retour
+                    </a>
+                }
+                <a href="/Location/ExportPDF/@Model.Id" class="btn-primary-custom w-100" style="justify-content:center;padding:12px;margin-bottom:8px;background:linear-gradient(135deg,#DC2626,#B91C1C);">
+                    <i class="fas fa-file-pdf"></i> Télécharger la facture PDF
+                </a>
+                <a href="/Location/Index" class="btn-ghost w-100" style="justify-content:center;padding:11px;">
+                    <i class="fas fa-list"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

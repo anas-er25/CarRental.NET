@@ -1,0 +1,111 @@
+@model LocationDetailViewModel
+@{ ViewData["Title"] = "Facture #" + Model.Location.Id; Layout = "~/Views/Shared/_LayoutPortail.cshtml"; }
+
+<div style="max-width:800px;margin:40px auto;padding:0 24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <a href="javascript:history.back()" class="btn-ghost"><i class="fas fa-arrow-left"></i> Retour</a>
+        <button onclick="window.print()" class="btn-primary-custom"><i class="fas fa-print"></i> Imprimer / Exporter PDF</button>
+    </div>
+
+    <!-- INVOICE -->
+    <div id="invoice" style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:40px;box-shadow:var(--shadow)">
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:36px;padding-bottom:24px;border-bottom:2px solid var(--gray-100)">
+            <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                    <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--orange),#ff8444);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;color:var(--navy)">CarRental</div>
+                </div>
+                <div style="font-size:.8rem;color:var(--gray-400)">Casablanca, Maroc</div>
+                <div style="font-size:.8rem;color:var(--gray-400)">contact@carrental.ma</div>
+            </div>
+            <div style="text-align:right">
+                <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:800;color:var(--navy)">FACTURE</div>
+                <div style="font-size:.9rem;font-weight:700;color:var(--orange)">#@Model.Location.Id.ToString("D6")</div>
+                <div style="font-size:.8rem;color:var(--gray-400);margin-top:4px">Émise le @DateTime.Now.ToString("dd MMMM yyyy")</div>
+            </div>
+        </div>
+
+        <!-- Client & Vehicle -->
+        <div class="row" style="margin-bottom:28px">
+            <div class="col-6">
+                <div style="font-size:.7rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Facturé à</div>
+                <div style="font-weight:800;color:var(--navy);font-size:.95rem">@Model.Location.Client?.NomComplet</div>
+                <div style="font-size:.82rem;color:var(--gray-600)">CIN : @Model.Location.Client?.CIN</div>
+                <div style="font-size:.82rem;color:var(--gray-600)">@Model.Location.Client?.Telephone</div>
+                <div style="font-size:.82rem;color:var(--gray-600)">@Model.Location.Client?.Email</div>
+                @if (!string.IsNullOrEmpty(Model.Location.Client?.Adresse))
+                { <div style="font-size:.82rem;color:var(--gray-600)">@Model.Location.Client.Adresse</div> }
+            </div>
+            <div class="col-6">
+                <div style="font-size:.7rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Véhicule loué</div>
+                <div style="font-weight:800;color:var(--navy);font-size:.95rem">@Model.Location.Voiture?.Marque @Model.Location.Voiture?.Modele</div>
+                <div style="font-size:.82rem;color:var(--gray-600)">Immat. : @Model.Location.Voiture?.Immatriculation</div>
+                <div style="font-size:.82rem;color:var(--gray-600)">Catégorie : @Model.Location.Voiture?.Categorie</div>
+                <div style="font-size:.82rem;color:var(--gray-600)">Tarif : @Model.Location.Voiture?.PrixParJour.ToString("N0") DH/jour</div>
+            </div>
+        </div>
+
+        <!-- Details table -->
+        <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+            <thead>
+                <tr style="background:var(--navy)">
+                    <th style="padding:12px 16px;text-align:left;font-size:.75rem;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.05em">Description</th>
+                    <th style="padding:12px 16px;text-align:center;font-size:.75rem;font-weight:800;color:#fff;text-transform:uppercase">Qté</th>
+                    <th style="padding:12px 16px;text-align:right;font-size:.75rem;font-weight:800;color:#fff;text-transform:uppercase">P.U.</th>
+                    <th style="padding:12px 16px;text-align:right;font-size:.75rem;font-weight:800;color:#fff;text-transform:uppercase">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom:1px solid var(--gray-100)">
+                    <td style="padding:14px 16px;font-size:.88rem">
+                        <div style="font-weight:700">Location @Model.Location.Voiture?.Marque @Model.Location.Voiture?.Modele</div>
+                        <div style="font-size:.78rem;color:var(--gray-400)">Du @Model.Location.DateDebut.ToString("dd/MM/yyyy") au @Model.Location.DateFin.ToString("dd/MM/yyyy")</div>
+                    </td>
+                    <td style="padding:14px 16px;text-align:center;font-weight:600">@Model.Location.NombreJours j</td>
+                    <td style="padding:14px 16px;text-align:right;color:var(--gray-600)">@Model.Location.Voiture?.PrixParJour.ToString("N0") DH</td>
+                    <td style="padding:14px 16px;text-align:right;font-weight:800;color:var(--navy)">@Model.Location.PrixTotal.ToString("N0") DH</td>
+                </tr>
+                @foreach (var inc in Model.Incidents.Where(i => i.FraisSupplementaires > 0))
+                {
+                    <tr style="border-bottom:1px solid var(--gray-100);background:#FEF2F2">
+                        <td style="padding:14px 16px;font-size:.88rem">
+                            <div style="font-weight:700;color:#DC2626"><i class="fas fa-exclamation-triangle me-2"></i>@inc.TypeIncident</div>
+                            @if (!string.IsNullOrEmpty(inc.Description)) { <div style="font-size:.78rem;color:#B91C1C">@inc.Description</div> }
+                        </td>
+                        <td style="padding:14px 16px;text-align:center">1</td>
+                        <td style="padding:14px 16px;text-align:right;color:#DC2626">@inc.FraisSupplementaires.ToString("N0") DH</td>
+                        <td style="padding:14px 16px;text-align:right;font-weight:800;color:#DC2626">@inc.FraisSupplementaires.ToString("N0") DH</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr style="background:var(--gray-50)">
+                    <td colspan="3" style="padding:14px 16px;text-align:right;font-size:.82rem;font-weight:700;color:var(--gray-400);text-transform:uppercase">Sous-total</td>
+                    <td style="padding:14px 16px;text-align:right;font-weight:700">@((Model.Location.PrixTotal + Model.TotalIncidents).ToString("N0")) DH</td>
+                </tr>
+                <tr style="background:linear-gradient(135deg,var(--navy),var(--navy-light))">
+                    <td colspan="3" style="padding:16px;text-align:right;font-weight:800;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.04em">TOTAL À PAYER</td>
+                    <td style="padding:16px;text-align:right;font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:800;color:var(--orange-light)">@Model.TotalFacture.ToString("N0") DH</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- Footer -->
+        <div style="text-align:center;padding-top:20px;border-top:1px solid var(--gray-100);font-size:.78rem;color:var(--gray-400)">
+            Merci pour votre confiance — CarRental · Maroc · @DateTime.Now.Year
+        </div>
+    </div>
+</div>
+
+@section Styles {
+<style>
+@@media print {
+    .pub-nav, footer.pub-footer, .btn-ghost, .btn-primary-custom { display:none!important; }
+    #invoice { box-shadow:none!important; border:none!important; }
+    body { background:white; }
+}
+</style>
+}

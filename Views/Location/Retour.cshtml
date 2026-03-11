@@ -1,0 +1,211 @@
+﻿@model Location
+@{
+    ViewData["Title"] = "Retour de voiture";
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-header-title">Retour de Voiture</div>
+        <div class="page-header-sub">Enregistrez le retour et signalez tout dommage</div>
+    </div>
+    <a href="/Location/Index" class="btn-ghost"><i class="fas fa-arrow-left"></i> Retour</a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <!-- Summary card -->
+        <div class="card mb-4">
+            <div class="card-header" style="background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff;border-radius:calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;">
+                <i class="fas fa-file-contract" style="margin-right:8px;opacity:.7;"></i>Résumé de la location #@Model.Id
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div style="background:var(--gray-50);border-radius:10px;padding:14px;">
+                            <div style="font-size:.7rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Client</div>
+                            <div style="font-weight:800;color:var(--navy);">@Model.Client?.NomComplet</div>
+                            <div style="font-size:.8rem;color:var(--gray-400);">@Model.Client?.CIN · @Model.Client?.Telephone</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="background:var(--gray-50);border-radius:10px;padding:14px;">
+                            <div style="font-size:.7rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Voiture</div>
+                            <div style="font-weight:800;color:var(--navy);">@Model.Voiture?.Marque @Model.Voiture?.Modele</div>
+                            <div style="font-size:.8rem;color:var(--gray-400);">@Model.Voiture?.Immatriculation</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div style="text-align:center;background:var(--gray-50);border-radius:10px;padding:12px;">
+                            <div style="font-size:.68rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;">Début</div>
+                            <div style="font-weight:800;color:var(--navy);">@Model.DateDebut.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div style="text-align:center;background:var(--gray-50);border-radius:10px;padding:12px;">
+                            <div style="font-size:.68rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;">Fin</div>
+                            <div style="font-weight:800;color:var(--navy);">@Model.DateFin.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div style="text-align:center;background:var(--gray-50);border-radius:10px;padding:12px;">
+                            <div style="font-size:.68rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;">Durée</div>
+                            <div style="font-weight:800;color:var(--navy);">@Model.NombreJours jours</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prix location -->
+                <div style="margin-top:16px;background:linear-gradient(135deg,#F0FDF4,#DCFCE7);border:1.5px solid #A7F3D0;border-radius:10px;padding:16px;display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:.8rem;font-weight:800;color:#065F46;text-transform:uppercase;letter-spacing:.04em;">Prix location</span>
+                    <span style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:800;color:#059669;">@Model.PrixTotal.ToString("N0") DH</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Damage form -->
+        <form asp-action="Retour" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div class="card mb-4" style="border:1.5px solid #FDE68A;">
+                <div class="card-header" style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-color:#FDE68A;">
+                    <i class="fas fa-car-crash" style="color:#D97706;margin-right:8px;"></i>
+                    <span style="color:#92400E;">Dommages / Accident</span>
+                </div>
+                <div class="card-body">
+                    <!-- Toggle damage -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#FFFBEB;border-radius:10px;border:1px solid #FDE68A;margin-bottom:12px;">
+                        <div>
+                            <div style="font-weight:800;font-size:.9rem;color:#92400E;">La voiture a-t-elle subi des dommages ?</div>
+                            <div style="font-size:.78rem;color:#B45309;margin-top:2px;">Accident, rayure, bris de glace, etc.</div>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                            <input type="checkbox" name="ADommage" id="dommageToggle" value="true" class="form-check-input" style="width:46px;height:24px;" />
+                        </div>
+                    </div>
+
+                    <!-- Damage details (hidden by default) -->
+                    <div id="dommageDetails" style="display:none;">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label" style="color:#92400E;">Type d'incident *</label>
+                                <select name="TypeIncidentRetour" class="form-select" style="border-color:#FDE68A;">
+                                    <option value="">-- Sélectionner un type --</option>
+                                    <option value="Accident">Accident</option>
+                                    <option value="Rayure">Rayure</option>
+                                    <option value="BrisDeGlace">Bris de glace</option>
+                                    <option value="DeteriorationInterieure">Détérioration intérieure</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" style="color:#92400E;">Description du dommage *</label>
+                                <textarea name="DescriptionDommage" class="form-control" rows="3" placeholder="Décrivez les dommages constatés (ex: rayure sur l'aile avant droite, pare-choc endommagé...)" style="border-color:#FDE68A;"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" style="color:#92400E;">Montant à rembourser (DH) *</label>
+                                <div style="position:relative;">
+                                    <input type="number" name="MontantDommage" id="montantDommage" class="form-control" step="0.01" min="0" placeholder="0.00" style="border-color:#FDE68A;padding-right:46px;" oninput="updateTotal()" />
+                                    <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:.78rem;font-weight:700;color:#B45309;">DH</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" style="color:#92400E;">Photo du dommage (optionnel)</label>
+                                <input type="file" name="PhotoDommage" accept="image/*" class="form-control" style="border-color:#FDE68A;" />
+                            </div>
+                            <div class="col-12">
+                                <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#FFFBEB;border-radius:8px;border:1.5px solid #FDE68A;">
+                                    <input type="checkbox" name="DommageRembourse" id="dommageRembourse" value="true" class="form-check-input" style="width:20px;height:20px;" />
+                                    <label for="dommageRembourse" style="font-size:.88rem;font-weight:600;color:#92400E;cursor:pointer;">Dommage déjà remboursé</label>
+                                </div>
+                            </div>
+
+                            <!-- Total preview -->
+                            <div class="col-12">
+                                <div id="totalPreview" style="display:none;background:linear-gradient(135deg,#FEF2F2,#FEE2E2);border:1.5px solid #FECACA;border-radius:10px;padding:16px;">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                                        <span style="font-size:.82rem;color:#991B1B;">Location</span>
+                                        <span style="font-weight:700;color:#DC2626;">@Model.PrixTotal.ToString("N0") DH</span>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                                        <span style="font-size:.82rem;color:#991B1B;">Dommages</span>
+                                        <span id="dommageAmt" style="font-weight:700;color:#DC2626;">0 DH</span>
+                                    </div>
+                                    <div style="border-top:1.5px solid #FECACA;padding-top:8px;display:flex;justify-content:space-between;align-items:center;">
+                                        <span style="font-weight:800;color:#991B1B;text-transform:uppercase;font-size:.8rem;letter-spacing:.04em;">Total à payer</span>
+                                        <span id="totalAmt" style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:800;color:#DC2626;"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirm buttons -->
+            <div class="card" style="border:1.5px solid #A7F3D0;">
+                <div class="card-body d-flex gap-3 align-items-center" style="padding:16px 20px;">
+                    <div style="width:44px;height:44px;background:#ECFDF5;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#059669;font-size:1.1rem;flex-shrink:0;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-weight:800;color:var(--navy);font-size:.92rem;">Confirmer le retour</div>
+                        <div style="font-size:.78rem;color:var(--gray-400);">La voiture sera marquée comme disponible</div>
+                    </div>
+                    <button type="submit" class="btn-success-soft" style="font-size:.9rem;padding:10px 22px;">
+                        <i class="fas fa-check-circle"></i> Valider le retour
+                    </button>
+                    <a href="/Location/Index" class="btn-ghost">Annuler</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // const prixLocation = @Model.PrixTotal;
+    const prixLocation = @Model.PrixTotal.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const dommageToggle = document.getElementById("dommageToggle");
+
+        if (dommageToggle) {
+            dommageToggle.addEventListener("change", function () {
+                toggleDommage(this);
+            });
+        }
+
+    });
+
+    function toggleDommage(cb) {
+        const details = document.getElementById("dommageDetails");
+        const preview = document.getElementById("totalPreview");
+
+        if (cb.checked) {
+            details.style.display = "block";
+        } else {
+            details.style.display = "none";
+            if (preview) preview.style.display = "none";
+        }
+    }
+
+    function updateTotal() {
+        const montantInput = document.getElementById("montantDommage");
+        const montant = parseFloat(montantInput.value) || 0;
+
+        const preview = document.getElementById("totalPreview");
+        const dommageAmt = document.getElementById("dommageAmt");
+        const totalAmt = document.getElementById("totalAmt");
+
+        if (montant > 0) {
+            dommageAmt.textContent = montant.toLocaleString('fr-MA') + " DH";
+            totalAmt.textContent = (prixLocation + montant).toLocaleString('fr-MA') + " DH";
+            preview.style.display = "block";
+        } else {
+            preview.style.display = "none";
+        }
+    }
+</script>
+}

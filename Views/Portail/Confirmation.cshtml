@@ -1,0 +1,78 @@
+@model CarRental.Models.DemandeLocation
+@{ ViewData["Title"] = "Demande envoyée"; Layout = "~/Views/Shared/_LayoutPortail.cshtml"; }
+
+<div style="min-height:calc(100vh - 130px);display:flex;align-items:center;justify-content:center;padding:40px 24px">
+    <div style="text-align:center;max-width:520px">
+        <!-- Success icon -->
+        <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border:2px solid #A7F3D0;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;animation:bounceIn .6s ease">
+            <i class="fas fa-paper-plane" style="font-size:2rem;color:#059669"></i>
+        </div>
+
+        <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:800;color:var(--navy);margin-bottom:10px">
+            Demande envoyée !
+        </div>
+        <p style="font-size:.95rem;color:var(--gray-400);line-height:1.6;margin-bottom:28px">
+            Votre demande de location a été reçue. L'administrateur va l'examiner et vous contactera pour confirmer.
+        </p>
+
+        <!-- Summary card -->
+        <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:22px;text-align:left;margin-bottom:28px;box-shadow:var(--shadow)">
+            <div style="font-size:.7rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Récapitulatif de votre demande</div>
+            @foreach (var (lbl,val) in new[]{
+                ("N° de demande", $"#{Model.Id}"),
+                ("Véhicule", $"{Model.Voiture?.Marque} {Model.Voiture?.Modele}"),
+                ("Période", $"{Model.DateDebut:dd/MM/yyyy} → {Model.DateFin:dd/MM/yyyy}"),
+                ("Durée", $"{Model.NombreJours} jour(s)"),
+                ("Statut", "En attente de confirmation"),
+            })
+            {
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-100)">
+                    <span style="font-size:.82rem;color:var(--gray-400);font-weight:600">@lbl</span>
+                    <span style="font-size:.88rem;font-weight:700;color:@(lbl=="Statut"?"#D97706":"var(--navy)")">
+                        @if (lbl == "Statut") { <i class="fas fa-clock me-1"></i> }
+                        @val
+                    </span>
+                </div>
+            }
+            @{ var total = (Model.Voiture?.PrixParJour ?? 0) * Model.NombreJours; }
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;margin-top:4px">
+                <span style="font-size:.82rem;font-weight:800;color:var(--navy)">Total estimé</span>
+                <span style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;color:var(--orange)">@total.ToString("N0") DH</span>
+            </div>
+        </div>
+
+        <!-- Next steps -->
+        <div style="background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:1px solid #C7D2FE;border-radius:var(--radius);padding:18px 22px;text-align:left;margin-bottom:28px">
+            <div style="font-size:.78rem;font-weight:800;color:#3730A3;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Prochaines étapes</div>
+            @foreach (var (num,txt) in new[]{
+                ("1","L'administrateur examinera votre demande"),
+                ("2","Vous serez contacté(e) pour confirmation"),
+                ("3","La location sera créée automatiquement"),
+            })
+            {
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:.85rem;color:#4338CA">
+                    <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#6366F1,#4338CA);color:#fff;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">@num</div>
+                    @txt
+                </div>
+            }
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            <a href="/Portail/Index" class="btn-ghost"><i class="fas fa-car"></i> Retour au catalogue</a>
+            @if (ViewBag.ClientConnecte != null)
+            {
+                <a href="/Portail/Espace" class="btn-primary-custom"><i class="fas fa-user"></i> Mon espace</a>
+            }
+            else
+            {
+                <a href="/Portail/Register" class="btn-navy"><i class="fas fa-user-plus"></i> Créer mon compte</a>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<style>
+@@keyframes bounceIn { 0%{transform:scale(0);opacity:0} 70%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+</style>
+}

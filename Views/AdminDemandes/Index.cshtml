@@ -1,0 +1,237 @@
+﻿@model List<CarRental.Models.DemandeLocation>
+@{
+    ViewData["Title"] = "Demandes de location";
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+    <div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:800;color:var(--navy)">Demandes de location</div>
+        <div style="font-size:.82rem;color:var(--gray-400);margin-top:3px">@Model.Count demande(s) · Confirmez ou rejetez chaque demande</div>
+    </div>
+    <a href="/Portail/Index" target="_blank" class="btn-primary-custom"><i class="fas fa-globe"></i> Voir le portail</a>
+</div>
+
+<!-- TABS -->
+<div style="display:flex;gap:6px;margin-bottom:20px;background:var(--white);padding:6px;border-radius:var(--radius-sm);border:1px solid var(--gray-200);width:fit-content">
+    @foreach (var (val, lbl, col) in new[] { ("", "Toutes", "var(--gray-400)"), ("EnAttente", "En attente", "#D97706"), ("Confirmee", "Confirmées", "#059669"), ("Rejetee", "Rejetées", "#DC2626") })
+    {
+        var isActive = (ViewBag.Statut ?? "") == val;
+        var cnt = val == "" ? Model.Count : Model.Count(d => d.Statut == val);
+        <a href="/AdminDemandes/Index?statut=@val"
+               style="padding:7px 16px;border-radius:6px;font-size:.82rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:7px;transition:all .2s ease;
+            background:@(isActive ? "var(--navy)" : "transparent");color:@(isActive ? "#fff" : col)">
+            @lbl
+            <span style="min-width:20px;height:20px;border-radius:10px;font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;
+            background:@(isActive ? "rgba(255,255,255,.2)" : "var(--gray-100)");color:@(isActive ? "#fff" : col)">@cnt</span>
+        </a>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div style="text-align:center;padding:60px;color:var(--gray-400)">
+            <i class="fas fa-inbox" style="font-size:2.5rem;opacity:.2;display:block;margin-bottom:14px"></i>
+            <div style="font-weight:700">Aucune demande</div>
+        </div>
+    </div>
+}
+else
+{
+    <div style="display:flex;flex-direction:column;gap:12px">
+        @foreach (var d in Model)
+        {
+            var (bg, bdrc, statlbl, statcls) = d.Statut switch
+            {
+                "EnAttente" => ("#FFFBEB", "#FDE68A", "En attente", "bp-yellow"),
+                "Confirmee" => ("#ECFDF5", "#A7F3D0", "Confirmée", "bp-green"),
+                "Rejetee" => ("#FEF2F2", "#FECACA", "Rejetée", "bp-red"),
+                _ => ("var(--white)", "var(--gray-200)", "Autre", "bp-gray")
+            };
+            <div style="background:var(--white);border:1px solid @bdrc;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);animation:fadeUp .4s ease">
+                <!-- Header row -->
+                <div style="background:@bg;padding:14px 20px;display:flex;align-items:center;gap:14px">
+                    <div style="width:40px;height:40px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.82rem;flex-shrink:0">
+                        @{
+                            var initials = d.NomCompletDemandeur.Split(' ').Take(2).Select(w => w.Length > 0 ? w[0].ToString() : "").Aggregate("", (a, b) => a + b);
+                        }
+                        @initials
+                    </div>
+                    <div style="flex:1">
+                        <div style="font-weight:800;font-size:.95rem;color:var(--navy)">@d.NomCompletDemandeur</div>
+                        <div style="font-size:.78rem;color:var(--gray-400)">
+                            @(d.ClientId.HasValue ? "Client enregistré" : "Client anonyme")
+                            · Demande le @d.DateDemande.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                    </div>
+                    <span class="badge-pill @statcls">@statlbl</span>
+                    @if (d.Statut == "EnAttente")
+                    {
+                        <span style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:4px 10px;font-size:.72rem;font-weight:800;color:#92400E;animation:pulse 2s infinite">
+                            <i class="fas fa-clock me-1"></i>Action requise
+                        </span>
+                    }
+                </div>
+
+                <!-- Content -->
+                <div style="padding:16px 20px">
+                    <div class="row g-3 align-items-center">
+                        <!-- Voiture info -->
+                        <div class="col-md-3">
+                            <div style="font-size:.7rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Véhicule demandé</div>
+                            <div style="font-weight:800;color:var(--navy)">@d.Voiture?.Marque @d.Voiture?.Modele</div>
+                            <div style="font-size:.78rem;color:var(--gray-400)">@d.Voiture?.Categorie · @d.Voiture?.PrixParJour.ToString("N0") DH/j</div>
+                            <div style="font-size:.78rem;color:var(--gray-400)">@d.Voiture?.Immatriculation</div>
+                        </div>
+
+                        <!-- Dates -->
+                        <div class="col-md-3">
+                            <div style="font-size:.7rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Période</div>
+                            <div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:.88rem;color:var(--navy)">
+                                <span>@d.DateDebut.ToString("dd/MM/yyyy")</span>
+                                <i class="fas fa-arrow-right" style="color:var(--gray-400);font-size:.7rem"></i>
+                                <span>@d.DateFin.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <div style="font-size:.78rem;color:var(--gray-400);margin-top:3px">@d.NombreJours jour(s)</div>
+                            @{
+                                var total = (d.Voiture?.PrixParJour ?? 0) * d.NombreJours;
+                            }
+                            <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--orange);margin-top:4px">@total.ToString("N0") DH</div>
+                        </div>
+
+                        <!-- Contact client anonyme -->
+                        @if (!d.ClientId.HasValue)
+                        {
+                            <div class="col-md-3">
+                                <div style="font-size:.7rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Contact</div>
+                                <div style="font-size:.82rem;color:var(--navy)">
+                                    <div><i class="fas fa-id-card me-1 text-muted"></i>@d.CINDemandeur</div>
+                                    <div><i class="fas fa-phone me-1 text-muted"></i>@d.TelephoneDemandeur</div>
+                                    <div><i class="fas fa-envelope me-1 text-muted"></i>@d.EmailDemandeur</div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-3">
+                                <div style="font-size:.7rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Client</div>
+                                <div style="font-size:.82rem;color:var(--navy)">
+                                    <div><i class="fas fa-phone me-1 text-muted"></i>@d.Client?.Telephone</div>
+                                    <div><i class="fas fa-envelope me-1 text-muted"></i>@d.Client?.Email</div>
+                                </div>
+                                <a href="/Client/Details/@d.ClientId" style="font-size:.75rem;font-weight:700;color:var(--orange);text-decoration:none;margin-top:4px;display:block">Voir profil →</a>
+                            </div>
+                        }
+
+                        <!-- Actions -->
+                        <div class="col-md-3" style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+                            @if (d.Statut == "EnAttente")
+                            {
+                                <!-- CONFIRMER -->
+                                <button onclick="openConfirm(@d.Id, '@(d.Voiture?.Marque) @(d.Voiture?.Modele)', @total)"
+                                        style="background:linear-gradient(135deg,#059669,#047857);color:#fff;border:none;border-radius:var(--radius-sm);padding:9px 18px;font-size:.82rem;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 3px 10px rgba(5,150,105,.3);transition:all .2s ease"
+                                        onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform='none'">
+                                    <i class="fas fa-check"></i> Confirmer la location
+                                </button>
+                                <!-- REJETER -->
+                                <button onclick="openRejet(@d.Id)"
+                                        style="background:var(--white);color:#DC2626;border:1.5px solid #FECACA;border-radius:var(--radius-sm);padding:8px 18px;font-size:.82rem;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s ease"
+                                        onmouseenter="this.style.background='#FEF2F2'" onmouseleave="this.style.background='white'">
+                                    <i class="fas fa-times"></i> Rejeter
+                                </button>
+                            }
+                            else if (d.Statut == "Confirmee" && d.LocationId.HasValue)
+                            {
+                                <a href="/Location/Details/@d.LocationId" class="btn-primary-custom" style="width:100%;justify-content:center;font-size:.82rem">
+                                    <i class="fas fa-file-contract"></i> Voir la location
+                                </a>
+                            }
+                            @if (!string.IsNullOrEmpty(d.NoteAdmin))
+                            {
+                                <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:8px 10px;font-size:.75rem;color:var(--gray-600);width:100%">
+                                    <i class="fas fa-sticky-note text-muted me-1"></i>@d.NoteAdmin
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(d.Remarques))
+                    {
+                        <div style="margin-top:12px;padding:10px 14px;background:var(--gray-50);border-left:3px solid var(--orange);border-radius:0 6px 6px 0;font-size:.8rem;color:var(--gray-600)">
+                            <i class="fas fa-comment me-2"></i>@d.Remarques
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- MODAL Confirmer -->
+<div id="modalConfirm" style="display:none;position:fixed;inset:0;background:rgba(15,32,68,.5);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:var(--white);border-radius:var(--radius);padding:32px;width:440px;max-width:90vw;box-shadow:var(--shadow-lg)">
+        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:800;color:var(--navy);margin-bottom:6px">Confirmer la location</div>
+        <div id="confirmDesc" style="font-size:.85rem;color:var(--gray-400);margin-bottom:20px"></div>
+        <form id="formConfirm" method="post">
+            @Html.AntiForgeryToken()
+            <div style="margin-bottom:16px">
+                <label class="form-label">Note pour le client (optionnel)</label>
+                <textarea name="noteAdmin" class="form-control" rows="2" placeholder="Ex: Voiture récupérable à 9h..."></textarea>
+            </div>
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;background:linear-gradient(135deg,#059669,#047857);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px;font-weight:700;cursor:pointer;font-size:.9rem">
+                    <i class="fas fa-check me-2"></i>Confirmer
+                </button>
+                <button type="button" onclick="document.getElementById('modalConfirm').style.display='none'" style="flex:1;background:var(--gray-100);color:var(--gray-600);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:12px;font-weight:700;cursor:pointer;font-size:.9rem">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL Rejeter -->
+<div id="modalRejet" style="display:none;position:fixed;inset:0;background:rgba(15,32,68,.5);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:var(--white);border-radius:var(--radius);padding:32px;width:420px;max-width:90vw;box-shadow:var(--shadow-lg)">
+        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:800;color:#DC2626;margin-bottom:6px">Rejeter la demande</div>
+        <p style="font-size:.85rem;color:var(--gray-400);margin-bottom:20px">Le client sera informé du rejet.</p>
+        <form id="formRejet" method="post">
+            @Html.AntiForgeryToken()
+            <div style="margin-bottom:16px">
+                <label class="form-label">Motif du rejet (optionnel)</label>
+                <textarea name="noteAdmin" class="form-control" rows="2" placeholder="Ex: Voiture non disponible à cette date..."></textarea>
+            </div>
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;background:linear-gradient(135deg,#DC2626,#B91C1C);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px;font-weight:700;cursor:pointer;font-size:.9rem">
+                    <i class="fas fa-times me-2"></i>Rejeter
+                </button>
+                <button type="button" onclick="document.getElementById('modalRejet').style.display='none'" style="flex:1;background:var(--gray-100);color:var(--gray-600);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:12px;font-weight:700;cursor:pointer;font-size:.9rem">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        @@keyframes pulse {
+            0%, 100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .6
+            }
+        }
+    </style>
+    <script>
+        function openConfirm(id, voiture, total) {
+            document.getElementById('confirmDesc').textContent = `${voiture} · Total estimé: ${total.toLocaleString('fr-MA')} DH`;
+            document.getElementById('formConfirm').action = `/AdminDemandes/Confirmer/${id}`;
+            document.getElementById('modalConfirm').style.display = 'flex';
+        }
+        function openRejet(id) {
+            document.getElementById('formRejet').action = `/AdminDemandes/Rejeter/${id}`;
+            document.getElementById('modalRejet').style.display = 'flex';
+        }
+        document.querySelectorAll('#modalConfirm,#modalRejet').forEach(m => {
+            m.addEventListener('click', e => { if (e.target === m) m.style.display = 'none'; });
+        });
+    </script>
+}

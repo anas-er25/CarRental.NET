@@ -1,0 +1,263 @@
+﻿@model CarRental.Models.ViewModels.RetourViewModel
+@{
+    ViewData["Title"] = "Retour du véhicule";
+}
+
+<div style="max-width:900px;margin:0 auto">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px">
+        <a href="/Location/Index" style="width:38px;height:38px;border-radius:10px;background:var(--gray-100);border:1px solid var(--gray-200);display:flex;align-items:center;justify-content:center;color:var(--gray-600);text-decoration:none;font-size:.85rem;transition:all .2s ease" onmouseenter="this.style.background='var(--gray-200)'" onmouseleave="this.style.background='var(--gray-100)'">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;color:var(--navy)">Retour du véhicule</div>
+            <div style="font-size:.82rem;color:var(--gray-400)">Location #@Model.Location.Id · @Model.Location.Client?.NomComplet · @Model.Location.Voiture?.Marque @Model.Location.Voiture?.Modele</div>
+        </div>
+    </div>
+
+    <!-- Status banner -->
+    @{
+        var today = DateTime.Today;
+        var isLate = today > Model.Location.DateFin;
+        var isEarly = today < Model.Location.DateFin;
+        var daysLate = isLate ? (today - Model.Location.DateFin).Days : 0;
+        var daysEarly = isEarly ? (Model.Location.DateFin - today).Days : 0;
+        var penalite = isLate ? daysLate * (Model.Location.Voiture?.PrixParJour ?? 0) * 1.5m : 0;
+    }
+    @if (isLate)
+    {
+        <div style="background:linear-gradient(135deg,#FEF2F2,#FEE2E2);border:1.5px solid #FECACA;border-radius:var(--radius);padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
+            <i class="fas fa-exclamation-triangle" style="color:#DC2626;font-size:1.2rem"></i>
+            <div>
+                <div style="font-weight:800;color:#B91C1C">Retour tardif — @daysLate jour(s) de retard</div>
+                <div style="font-size:.82rem;color:#DC2626">Pénalité appliquée : @penalite.ToString("N0") DH (+50% du tarif journalier)</div>
+            </div>
+        </div>
+    }
+    else if (isEarly)
+    {
+        <div style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1.5px solid #FDE68A;border-radius:var(--radius);padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
+            <i class="fas fa-undo" style="color:#D97706;font-size:1.2rem"></i>
+            <div>
+                <div style="font-weight:800;color:#92400E">Retour anticipé — @daysEarly jour(s) avant la date prévue</div>
+                <div style="font-size:.82rem;color:#D97706">Le prix sera recalculé sur la durée réelle.</div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border:1.5px solid #A7F3D0;border-radius:var(--radius);padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
+            <i class="fas fa-check-circle" style="color:#059669;font-size:1.2rem"></i>
+            <div style="font-weight:800;color:#065F46">Retour à la date prévue ✓</div>
+        </div>
+    }
+
+    <form method="post" action="/Incident/Retour/@Model.Location.Id" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="Location.Id" value="@Model.Location.Id" />
+
+        <div class="row g-4">
+            <!-- LEFT: Summary + Incidents existants -->
+            <div class="col-lg-5">
+                <!-- Location summary -->
+                <div class="card" style="margin-bottom:16px">
+                    <div style="padding:16px 20px;border-bottom:1px solid var(--gray-100);font-weight:800;color:var(--navy);font-size:.9rem">
+                        <i class="fas fa-file-contract me-2" style="color:var(--orange)"></i>Récapitulatif
+                    </div>
+                    <div style="padding:16px 20px">
+                        @foreach (var (lbl, val) in new[]{
+                            ("Client", Model.Location.Client?.NomComplet ?? "-"),
+                            ("Véhicule", $"{Model.Location.Voiture?.Marque} {Model.Location.Voiture?.Modele}"),
+                            ("Immat.", Model.Location.Voiture?.Immatriculation ?? "-"),
+                            ("Période", $"{Model.Location.DateDebut:dd/MM} → {Model.Location.DateFin:dd/MM/yyyy}"),
+                            ("Durée initiale", $"{Model.Location.NombreJours} jour(s)"),
+                            ("Prix base", $"{Model.Location.PrixTotal:N0} DH"),
+                        })
+                        {
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--gray-50)">
+                                <span style="font-size:.78rem;color:var(--gray-400);font-weight:600">@lbl</span>
+                                <span style="font-size:.85rem;font-weight:700;color:var(--navy)">@val</span>
+                            </div>
+                        }
+                        <!-- Total dynamique -->
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:2px solid var(--gray-200)">
+                            <span style="font-size:.82rem;font-weight:800;color:var(--navy)">TOTAL FINAL</span>
+                            <span id="totalFinal" style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;color:var(--orange)">@Model.Location.PrixTotal.ToString("N0") DH</span>
+                        </div>
+                        @if (isLate)
+                        {
+                            <div style="font-size:.72rem;color:#DC2626;text-align:right;margin-top:3px">+@penalite.ToString("N0") DH pénalité retard incluse</div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Incidents déjà enregistrés -->
+                @if (Model.IncidentsExistants.Any())
+                {
+                    <div class="card">
+                        <div style="padding:14px 18px;border-bottom:1px solid var(--gray-100);font-weight:800;color:var(--navy);font-size:.85rem">
+                            <i class="fas fa-history me-2" style="color:#DC2626"></i>Incidents déjà signalés (@Model.IncidentsExistants.Count)
+                        </div>
+                        @foreach (var inc in Model.IncidentsExistants)
+                        {
+                            <div style="padding:12px 18px;border-bottom:1px solid var(--gray-50);font-size:.82rem">
+                                <div style="font-weight:700;color:#DC2626">@inc.TypeIncident</div>
+                                @if (!string.IsNullOrEmpty(inc.Description))
+                                {
+                                    <div style="color:var(--gray-600)">@inc.Description</div>
+                                }
+                                @if (inc.FraisSupplementaires > 0)
+                                {
+                                    <div style="color:var(--gray-400)">@inc.FraisSupplementaires.ToString("N0") DH</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- RIGHT: Damage check -->
+            <div class="col-lg-7">
+                <div class="card">
+                    <div style="padding:18px 22px;border-bottom:1px solid var(--gray-100)">
+                        <div style="font-weight:800;color:var(--navy);font-size:.95rem">
+                            <i class="fas fa-search me-2" style="color:var(--orange)"></i>Vérification de l'état du véhicule
+                        </div>
+                    </div>
+                    <div style="padding:20px 22px">
+                        <!-- Damage toggle -->
+                        <div style="margin-bottom:22px">
+                            <div style="font-size:.75rem;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Un dommage a-t-il été constaté ?</div>
+                            <div style="display:flex;gap:10px">
+                                <label style="flex:1;cursor:pointer">
+                                    <input type="radio" name="ADommage" value="false" id="noDamage" style="display:none" checked />
+                                    <div class="damage-opt" id="noDamageBtn" onclick="toggleDamage(false)"
+                                         style="padding:14px;border-radius:10px;border:2px solid #A7F3D0;background:#ECFDF5;text-align:center;font-weight:700;font-size:.88rem;color:#059669">
+                                        <i class="fas fa-check-circle" style="font-size:1.2rem;display:block;margin-bottom:4px"></i>Aucun dommage
+                                    </div>
+                                </label>
+                                <label style="flex:1;cursor:pointer">
+                                    <input type="radio" name="ADommage" value="true" id="yesDamage" style="display:none" />
+                                    <div class="damage-opt" id="yesDamageBtn" onclick="toggleDamage(true)"
+                                         style="padding:14px;border-radius:10px;border:2px solid var(--gray-200);background:var(--gray-50);text-align:center;font-weight:700;font-size:.88rem;color:var(--gray-400)">
+                                        <i class="fas fa-car-crash" style="font-size:1.2rem;display:block;margin-bottom:4px"></i>Dommage signalé
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Damage form (shown when damage = yes) -->
+                        <div id="damageForm" style="display:none;animation:fadeUp .3s ease">
+                            <!-- Type incident -->
+                            <div style="margin-bottom:16px">
+                                <label class="form-label">Type de dommage *</label>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                                    @foreach (var (val, lbl, ico) in new[]{
+                                        ("Accident","Accident","fas fa-car-burst"),
+                                        ("Rayure","Rayure","fas fa-paint-brush"),
+                                        ("BrisDeGlace","Bris de glace","fas fa-glass-water-droplet"),
+                                        ("DeteriorationInterieure","Détérioration intérieure","fas fa-couch"),
+                                        ("RetourTardif","Retour tardif","fas fa-clock"),
+                                        ("Autre","Autre","fas fa-ellipsis")
+                                    })
+                                    {
+                                        <label style="cursor:pointer">
+                                            <input type="radio" name="TypeIncident" value="@val" style="display:none" class="incident-radio" />
+                                            <div class="incident-type-btn" style="padding:10px 12px;border-radius:8px;border:1.5px solid var(--gray-200);background:var(--white);text-align:center;font-size:.78rem;font-weight:700;color:var(--gray-600);transition:all .2s ease;cursor:pointer">
+                                                <i class="@ico" style="display:block;font-size:1rem;margin-bottom:4px;color:var(--gray-400)"></i>@lbl
+                                            </div>
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom:16px">
+                                <label class="form-label">Description du dommage</label>
+                                <textarea name="DescriptionIncident" class="form-control" rows="3" placeholder="Décrivez le dommage constaté..."></textarea>
+                            </div>
+
+                            <div class="row g-3" style="margin-bottom:16px">
+                                <div class="col-6">
+                                    <label class="form-label">Frais supplémentaires (DH)</label>
+                                    <input type="number" name="FraisIncident" id="fraisIncident" class="form-control" min="0" step="50" value="0" placeholder="0" oninput="updateTotal()" />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Photo du dommage</label>
+                                    <input type="file" name="photoIncident" class="form-control" accept="image/*" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <button type="submit" id="submitBtn"
+                                style="width:100%;background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff;border:none;border-radius:var(--radius-sm);padding:14px;font-size:.95rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .22s ease;box-shadow:0 4px 14px rgba(15,32,68,.25)"
+                                onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform='none'">
+                            <i class="fas fa-check-circle"></i>
+                            <span id="submitLabel">Valider le retour sans dommage</span>
+                        </button>
+                        <p style="text-align:center;font-size:.75rem;color:var(--gray-400);margin-top:10px">
+                            <i class="fas fa-info-circle me-1"></i>Cette action est irréversible. La voiture sera marquée comme disponible.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        const basePrix = @Model.Location.PrixTotal;
+        const penalite = @penalite;
+        const prixJour = @(Model.Location.Voiture?.PrixParJour ?? 0);
+        let hasDamage = false;
+
+        function toggleDamage(val) {
+            hasDamage = val;
+            document.getElementById(val ? 'yesDamage' : 'noDamage').checked = true;
+
+            const yesBtn = document.getElementById('yesDamageBtn');
+            const noBtn = document.getElementById('noDamageBtn');
+            const form = document.getElementById('damageForm');
+            const label = document.getElementById('submitLabel');
+
+            if (val) {
+                yesBtn.style.cssText = 'padding:14px;border-radius:10px;border:2px solid #FECACA;background:#FEF2F2;text-align:center;font-weight:700;font-size:.88rem;color:#DC2626';
+                noBtn.style.cssText = 'padding:14px;border-radius:10px;border:2px solid var(--gray-200);background:var(--gray-50);text-align:center;font-weight:700;font-size:.88rem;color:var(--gray-400)';
+                form.style.display = 'block';
+                label.textContent = 'Valider le retour avec dommage';
+            } else {
+                noBtn.style.cssText = 'padding:14px;border-radius:10px;border:2px solid #A7F3D0;background:#ECFDF5;text-align:center;font-weight:700;font-size:.88rem;color:#059669';
+                yesBtn.style.cssText = 'padding:14px;border-radius:10px;border:2px solid var(--gray-200);background:var(--gray-50);text-align:center;font-weight:700;font-size:.88rem;color:var(--gray-400)';
+                form.style.display = 'none';
+                label.textContent = 'Valider le retour sans dommage';
+                document.getElementById('fraisIncident').value = 0;
+                updateTotal();
+            }
+            updateTotal();
+        }
+
+        function updateTotal() {
+            const frais = parseFloat(document.getElementById('fraisIncident')?.value || 0);
+            const total = basePrix + penalite + (hasDamage ? frais : 0);
+            document.getElementById('totalFinal').textContent = total.toLocaleString('fr-MA') + ' DH';
+        }
+
+        // Highlight selected incident type
+        document.querySelectorAll('.incident-radio').forEach(radio => {
+            radio.addEventListener('change', () => {
+                document.querySelectorAll('.incident-type-btn').forEach(btn => {
+                    btn.style.borderColor = 'var(--gray-200)';
+                    btn.style.background = 'var(--white)';
+                    btn.style.color = 'var(--gray-600)';
+                    btn.querySelector('i').style.color = 'var(--gray-400)';
+                });
+                const selected = radio.nextElementSibling;
+                selected.style.borderColor = '#FECACA';
+                selected.style.background = '#FEF2F2';
+                selected.style.color = '#DC2626';
+                selected.querySelector('i').style.color = '#DC2626';
+            });
+        });
+    </script>
+}

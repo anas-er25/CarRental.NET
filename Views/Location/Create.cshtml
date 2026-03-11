@@ -1,0 +1,294 @@
+﻿@model LocationCreateViewModel
+@{
+    ViewData["Title"] = "Nouvelle Location";
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-header-title">Nouvelle Location</div>
+        <div class="page-header-sub">Créez un contrat de location</div>
+    </div>
+    <a href="/Location/Index" class="btn-ghost"><i class="fas fa-arrow-left"></i> Retour</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-file-contract" style="color:var(--orange);margin-right:8px;"></i>Détails de la location</div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+
+                        <!-- CLIENT avec bouton + -->
+                        <div class="col-md-6">
+                            <label class="form-label">Client</label>
+                            <div style="display:flex;gap:8px;">
+                                <select asp-for="Location.ClientId" class="form-select flex-fill" id="clientSelect">
+                                    <option value="">— Sélectionner un client —</option>
+                                    @foreach (var c in Model.Clients)
+                                    {
+                                        <option value="@c.Id">@c.NomComplet (@c.CIN)</option>
+                                    }
+                                </select>
+                                <button type="button" class="btn-primary-custom" style="padding:9px 14px;flex-shrink:0;" onclick="openClientModal()" title="Ajouter un nouveau client">
+                                    <i class="fas fa-user-plus"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Location.ClientId" class="text-danger" style="font-size:.75rem;"></span>
+                        </div>
+
+                        <!-- VOITURE -->
+                        <div class="col-md-6">
+                            <label class="form-label">Voiture</label>
+                            <select asp-for="Location.VoitureId" class="form-select" id="voitureSelect">
+                                <option value="">— Sélectionner une voiture —</option>
+                                @foreach (var v in Model.VoituresDisponibles)
+                                {
+                                    <option value="@v.Id" data-prix="@v.PrixParJour"
+                                            data-img="@v.ImagePrincipale"
+                                            data-cat="@v.Categorie">
+                                        @v.Marque @v.Modele (@v.Immatriculation) — @v.PrixParJour.ToString("N0") DH/j
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="Location.VoitureId" class="text-danger" style="font-size:.75rem;"></span>
+                        </div>
+
+                        <!-- Car preview -->
+                        <div class="col-12" id="carPreviewBox" style="display:none;">
+                            <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--gray-50);border-radius:var(--radius-sm);border:1.5px solid var(--gray-200);">
+                                <div id="carPreviewImg" style="width:64px;height:50px;border-radius:8px;background:var(--gray-200);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                                    <i class="fas fa-car" style="color:var(--gray-400);font-size:1.2rem;"></i>
+                                </div>
+                                <div>
+                                    <div id="carPreviewName" style="font-weight:800;color:var(--navy);font-size:.92rem;"></div>
+                                    <div id="carPreviewMeta" style="font-size:.78rem;color:var(--gray-400);margin-top:2px;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Location.DateDebut" class="form-label">Date de début</label>
+                            <input asp-for="Location.DateDebut" class="form-control" type="date" id="dateDebut" />
+                            <span asp-validation-for="Location.DateDebut" class="text-danger" style="font-size:.75rem;"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Location.DateFin" class="form-label">Date de fin</label>
+                            <input asp-for="Location.DateFin" class="form-control" type="date" id="dateFin" />
+                            <span asp-validation-for="Location.DateFin" class="text-danger" style="font-size:.75rem;"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Location.Remarques" class="form-label">Remarques</label>
+                            <textarea asp-for="Location.Remarques" class="form-control" rows="2" placeholder="Notes optionnelles..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Price preview -->
+                    <div id="prixPreview" style="display:none;background:linear-gradient(135deg,var(--navy),var(--navy-light));border-radius:var(--radius);padding:20px 24px;color:#fff;margin-top:16px;animation:fadeUp .3s ease;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="font-size:.72rem;font-weight:700;opacity:.6;text-transform:uppercase;letter-spacing:.08em;">Prix estimé</div>
+                                <div id="prixCalc" style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:800;color:var(--orange-light);"></div>
+                            </div>
+                            <div style="text-align:right;font-size:.85rem;opacity:.7;">
+                                <div id="nbJours" style="font-size:1.1rem;font-weight:700;"></div>
+                                <div style="font-size:.78rem;margin-top:2px;">jours × <span id="prixJourDisp"></span> DH/j</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 mt-4">
+                        <button type="submit" class="btn-primary-custom"><i class="fas fa-save"></i> Créer la location</button>
+                        <a href="/Location/Index" class="btn-ghost">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side info -->
+    <div class="col-lg-4">
+        <div class="card" style="border:1.5px solid #C7D2FE;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);">
+            <div class="card-header" style="background:transparent;border-color:#C7D2FE;color:#4338CA;">
+                <i class="fas fa-info-circle" style="color:#6366F1;margin-right:8px;"></i>Information
+            </div>
+            <div class="card-body" style="font-size:.85rem;color:#3730A3;line-height:1.8;">
+                <p>📋 <strong>Client :</strong> Si le client n'existe pas, cliquez sur le bouton <span style="background:#fff;padding:2px 8px;border-radius:6px;font-weight:700;color:var(--orange);">+</span> pour l'ajouter directement.</p>
+                <p class="mt-2">💰 <strong>Prix :</strong> Le montant total est calculé automatiquement selon le nombre de jours.</p>
+                <p class="mt-2">🔑 <strong>Retour :</strong> N'oubliez pas de valider le retour dans la liste des locations pour libérer la voiture.</p>
+            </div>
+        </div>
+
+        <!-- Dispo voitures -->
+        <div class="card mt-3">
+            <div class="card-header"><i class="fas fa-car" style="color:#059669;margin-right:8px;"></i>@Model.VoituresDisponibles.Count voiture(s) disponible(s)</div>
+            <div style="padding:12px;">
+                @foreach (var v in Model.VoituresDisponibles.Take(4))
+                {
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;border:1px solid var(--gray-100);margin-bottom:6px;">
+                        <div style="width:36px;height:30px;border-radius:6px;background:var(--gray-100);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                            @if (v.ImagePrincipale != null)
+                            {
+                                <img src="@v.ImagePrincipale" style="width:100%;height:100%;object-fit:cover;" />
+                            }
+                            else
+                            {
+
+                                <i class="fas fa-car" style="font-size:.8rem;color:var(--gray-400);"></i>
+                            }
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">@v.Marque @v.Modele</div>
+                            <div style="font-size:.7rem;color:var(--gray-400);">@v.Categorie</div>
+                        </div>
+                        <div style="font-weight:700;font-size:.82rem;color:var(--orange);white-space:nowrap;">@v.PrixParJour.ToString("N0") DH</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL : Ajouter client rapide ══ -->
+<div class="modal fade" id="modalClient" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-plus" style="color:var(--orange);margin-right:8px;"></i>Nouveau Client</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label">Nom</label>
+                        <input type="text" id="mc_nom" class="form-control" placeholder="Alami" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Prénom</label>
+                        <input type="text" id="mc_prenom" class="form-control" placeholder="Youssef" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">CIN</label>
+                        <input type="text" id="mc_cin" class="form-control" placeholder="AB123456" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Téléphone</label>
+                        <input type="text" id="mc_tel" class="form-control" placeholder="0612345678" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="mc_email" class="form-control" placeholder="exemple@email.ma" />
+                    </div>
+                    <div id="mc_error" style="display:none;" class="col-12">
+                        <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 14px;font-size:.82rem;color:#DC2626;font-weight:600;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-ghost" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn-primary-custom" onclick="saveClient()">
+                    <i class="fas fa-save"></i> Enregistrer et sélectionner
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Price calculator
+        function updatePrix() {
+            const vSel = document.getElementById('voitureSelect');
+            const debut = document.getElementById('dateDebut').value;
+            const fin = document.getElementById('dateFin').value;
+            const preview = document.getElementById('prixPreview');
+            const carBox = document.getElementById('carPreviewBox');
+
+            if (vSel.value) {
+                const opt = vSel.selectedOptions[0];
+                const img = opt.dataset.img;
+                const cat = opt.dataset.cat;
+                const name = opt.text.split('(')[0].trim();
+                document.getElementById('carPreviewName').textContent = name;
+                document.getElementById('carPreviewMeta').textContent = cat;
+                const imgDiv = document.getElementById('carPreviewImg');
+                if (img && img !== '') {
+                    imgDiv.innerHTML = `<img src="${img}" style="width:100%;height:100%;object-fit:cover;" />`;
+                }
+                carBox.style.display = 'block';
+            } else {
+                carBox.style.display = 'none';
+            }
+
+            if (vSel.value && debut && fin) {
+                const prix = parseFloat(vSel.selectedOptions[0].dataset.prix);
+                const jours = Math.round((new Date(fin) - new Date(debut)) / 86400000);
+                if (jours > 0) {
+                    document.getElementById('prixCalc').textContent = (prix * jours).toLocaleString('fr-MA') + ' DH';
+                    document.getElementById('nbJours').textContent = jours + ' jour' + (jours > 1 ? 's' : '');
+                    document.getElementById('prixJourDisp').textContent = prix.toLocaleString('fr-MA');
+                    preview.style.display = 'block';
+                    return;
+                }
+            }
+            preview.style.display = 'none';
+        }
+
+        document.getElementById('voitureSelect').addEventListener('change', updatePrix);
+        document.getElementById('dateDebut').addEventListener('change', updatePrix);
+        document.getElementById('dateFin').addEventListener('change', updatePrix);
+
+        // Quick client modal
+        function openClientModal() {
+            new bootstrap.Modal(document.getElementById('modalClient')).show();
+        }
+
+        async function saveClient() {
+            const nom = document.getElementById('mc_nom').value.trim();
+            const prenom = document.getElementById('mc_prenom').value.trim();
+            const cin = document.getElementById('mc_cin').value.trim();
+            const tel = document.getElementById('mc_tel').value.trim();
+            const email = document.getElementById('mc_email').value.trim();
+            const errBox = document.getElementById('mc_error');
+
+            if (!nom || !prenom || !cin || !tel || !email) {
+                errBox.style.display = 'block';
+                errBox.querySelector('div').textContent = 'Veuillez remplir tous les champs obligatoires.';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('Nom', nom);
+            formData.append('Prenom', prenom);
+            formData.append('CIN', cin);
+            formData.append('Telephone', tel);
+            formData.append('Email', email);
+
+            try {
+                const resp = await fetch('/Client/CreateQuick', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]').value }
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    const sel = document.getElementById('clientSelect');
+                    const opt = new Option(`${prenom} ${nom} (${cin})`, data.id, true, true);
+                    sel.add(opt);
+                    bootstrap.Modal.getInstance(document.getElementById('modalClient')).hide();
+                    errBox.style.display = 'none';
+                    // Clear fields
+                    ['mc_nom', 'mc_prenom', 'mc_cin', 'mc_tel', 'mc_email'].forEach(id => document.getElementById(id).value = '');
+                } else {
+                    errBox.style.display = 'block';
+                    errBox.querySelector('div').textContent = data.message || 'Erreur lors de la création.';
+                }
+            } catch {
+                errBox.style.display = 'block';
+                errBox.querySelector('div').textContent = 'Erreur de connexion au serveur.';
+            }
+        }
+    </script>
+}

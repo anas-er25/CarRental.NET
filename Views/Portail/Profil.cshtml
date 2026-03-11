@@ -1,0 +1,98 @@
+@model CarRental.Models.Client
+@{ ViewData["Title"] = "Mon profil"; Layout = "~/Views/Shared/_LayoutPortail.cshtml"; }
+
+<div style="max-width:700px;margin:40px auto;padding:0 24px">
+    <div style="margin-bottom:24px">
+        <a href="/Portail/Espace" style="color:var(--gray-400);text-decoration:none;font-size:.85rem;font-weight:600"><i class="fas fa-arrow-left me-1"></i>Mon espace</a>
+        <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:800;color:var(--navy);margin-top:8px">Mon profil</div>
+    </div>
+
+    <!-- Account status warning -->
+    @if (!Model.CompteActif)
+    {
+        <div style="background:#FEF2F2;border:1.5px solid #FECACA;border-radius:var(--radius);padding:14px 20px;margin-bottom:20px;display:flex;gap:12px;align-items:start">
+            <i class="fas fa-ban" style="color:#DC2626;font-size:1.1rem;margin-top:2px"></i>
+            <div>
+                <div style="font-weight:800;color:#B91C1C">Compte désactivé</div>
+                @if (!string.IsNullOrEmpty(Model.MotifDesactivation))
+                { <div style="font-size:.85rem;color:#DC2626">Motif : @Model.MotifDesactivation</div> }
+                @if (!string.IsNullOrEmpty(Model.RemarqueAdmin))
+                { <div style="font-size:.82rem;color:#9B1C1C;margin-top:4px">@Model.RemarqueAdmin</div> }
+                <div style="font-size:.82rem;color:#DC2626;margin-top:6px">Contactez l'administrateur pour régulariser votre situation.</div>
+            </div>
+        </div>
+    }
+
+    <form method="post" action="/Portail/Profil">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm);margin-bottom:16px">
+            <div style="font-weight:800;color:var(--navy);font-size:.9rem;margin-bottom:18px">
+                <i class="fas fa-user me-2" style="color:var(--orange)"></i>Informations personnelles
+            </div>
+            <div class="row g-3">
+                <div class="col-6">
+                    <label class="form-label">Nom *</label>
+                    <input asp-for="Nom" class="form-control" />
+                    <span asp-validation-for="Nom" class="text-danger" style="font-size:.75rem"></span>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Prénom *</label>
+                    <input asp-for="Prenom" class="form-control" />
+                    <span asp-validation-for="Prenom" class="text-danger" style="font-size:.75rem"></span>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">CIN *</label>
+                    <input asp-for="CIN" class="form-control" />
+                    <span asp-validation-for="CIN" class="text-danger" style="font-size:.75rem"></span>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Téléphone *</label>
+                    <input asp-for="Telephone" class="form-control" />
+                    <span asp-validation-for="Telephone" class="text-danger" style="font-size:.75rem"></span>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Email *</label>
+                    <input asp-for="Email" class="form-control" type="email" />
+                    <span asp-validation-for="Email" class="text-danger" style="font-size:.75rem"></span>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Adresse</label>
+                    <input asp-for="Adresse" class="form-control" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Password change -->
+        <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm);margin-bottom:20px">
+            <div style="font-weight:800;color:var(--navy);font-size:.9rem;margin-bottom:6px">
+                <i class="fas fa-lock me-2" style="color:var(--orange)"></i>Changer le mot de passe
+            </div>
+            <div style="font-size:.8rem;color:var(--gray-400);margin-bottom:18px">Laissez vide pour conserver le mot de passe actuel</div>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Ancien mot de passe</label>
+                    <input type="password" name="ancienMotDePasse" class="form-control" placeholder="••••••••" />
+                    <span class="text-danger" style="font-size:.75rem">@Html.ValidationMessage("ancienMotDePasse")</span>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Nouveau mot de passe</label>
+                    <input type="password" name="nouveauMotDePasse" class="form-control" placeholder="••••••••" minlength="6" />
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Confirmer</label>
+                    <input type="password" id="confirm" class="form-control" placeholder="••••••••" />
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:10px">
+            <button type="submit" class="btn-primary-custom" style="padding:12px 28px">
+                <i class="fas fa-save"></i> Enregistrer les modifications
+            </button>
+            <a href="/Portail/Espace" class="btn-ghost" style="padding:12px 20px">Annuler</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

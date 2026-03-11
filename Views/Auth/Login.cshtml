@@ -1,0 +1,457 @@
+﻿@{
+    ViewData["Title"] = "Connexion";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CarRental — Connexion</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --navy: #0F2044;
+            --navy-light: #1a3260;
+            --orange: #FF6B2B;
+            --orange-light: #FF8C55;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+            background: var(--navy);
+        }
+
+        /* ── LEFT PANEL ── */
+        .left-panel {
+            flex: 1;
+            background: linear-gradient(145deg, var(--navy) 0%, var(--navy-light) 60%, #142850 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated blobs */
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            animation: blobFloat 8s ease-in-out infinite;
+        }
+        .blob-1 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(255,107,43,.22), transparent 70%);
+            top: -100px; right: -100px;
+            animation-delay: 0s;
+        }
+        .blob-2 {
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(255,140,85,.15), transparent 70%);
+            bottom: -80px; left: 40px;
+            animation-delay: -3s;
+        }
+        .blob-3 {
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(255,255,255,.05), transparent 70%);
+            top: 40%; right: 20%;
+            animation-delay: -6s;
+        }
+        @@keyframes blobFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(20px, -20px) scale(1.05); }
+            66% { transform: translate(-15px, 15px) scale(0.95); }
+        }
+
+        /* Grid decoration */
+        .grid-deco {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .left-content { position: relative; z-index: 2; }
+
+        .brand-mark {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 60px;
+        }
+        .brand-mark-icon {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, var(--orange), #ff8444);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; color: #fff;
+            box-shadow: 0 8px 24px rgba(255,107,43,.4);
+        }
+        .brand-mark-text .t1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem; font-weight: 800;
+            color: #fff; line-height: 1;
+        }
+        .brand-mark-text .t2 {
+            font-size: .68rem; font-weight: 600;
+            color: rgba(255,255,255,.35);
+            text-transform: uppercase; letter-spacing: .12em;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.2rem; font-weight: 900;
+            color: #fff; line-height: 1.1;
+            margin-bottom: 20px;
+        }
+        .hero-title span {
+            background: linear-gradient(135deg, var(--orange), var(--orange-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-sub {
+            font-size: 1rem; color: rgba(255,255,255,.45);
+            font-weight: 500; line-height: 1.7;
+            max-width: 380px; margin-bottom: 48px;
+        }
+
+        .feature-list { display: flex; flex-direction: column; gap: 16px; }
+        .feature-item {
+            display: flex; align-items: center; gap: 14px;
+            animation: slideRight .6s ease both;
+        }
+        .feature-item:nth-child(1) { animation-delay: .1s; }
+        .feature-item:nth-child(2) { animation-delay: .2s; }
+        .feature-item:nth-child(3) { animation-delay: .3s; }
+        @@keyframes slideRight { from { opacity:0; transform: translateX(-20px); } to { opacity:1; transform:none; } }
+
+        .fi-icon {
+            width: 38px; height: 38px; border-radius: 10px;
+            background: rgba(255,107,43,.15);
+            border: 1px solid rgba(255,107,43,.25);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--orange-light); font-size: .88rem;
+            flex-shrink: 0;
+        }
+        .fi-text { font-size: .88rem; color: rgba(255,255,255,.6); font-weight: 500; }
+
+        .stats-row {
+            display: flex; gap: 32px; margin-top: 56px;
+            padding-top: 32px;
+            border-top: 1px solid rgba(255,255,255,.08);
+        }
+        .stat-item .sv {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem; font-weight: 800;
+            color: var(--orange-light);
+        }
+        .stat-item .sl {
+            font-size: .72rem; font-weight: 700;
+            color: rgba(255,255,255,.3);
+            text-transform: uppercase; letter-spacing: .08em;
+        }
+
+        /* ── RIGHT PANEL ── */
+        .right-panel {
+            width: 480px;
+            background: #FAFAF7;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 56px 48px;
+            position: relative;
+            box-shadow: -20px 0 60px rgba(0,0,0,.3);
+        }
+
+        .login-header { margin-bottom: 40px; animation: fadeUp .5s ease; }
+        .login-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem; font-weight: 800;
+            color: var(--navy); margin-bottom: 8px;
+        }
+        .login-header p { font-size: .9rem; color: #9BA3BF; font-weight: 500; }
+
+        .form-group { margin-bottom: 20px; animation: fadeUp .5s ease both; }
+        .form-group:nth-child(1) { animation-delay: .1s; }
+        .form-group:nth-child(2) { animation-delay: .18s; }
+        .form-group:nth-child(3) { animation-delay: .26s; }
+
+        label {
+            display: block;
+            font-size: .75rem; font-weight: 800;
+            color: var(--navy);
+            text-transform: uppercase; letter-spacing: .06em;
+            margin-bottom: 8px;
+        }
+
+        .input-wrap { position: relative; }
+        .input-wrap i {
+            position: absolute; left: 14px; top: 50%;
+            transform: translateY(-50%);
+            color: #9BA3BF; font-size: .88rem;
+            pointer-events: none;
+            transition: color .2s ease;
+        }
+        .input-wrap input {
+            width: 100%;
+            background: #fff;
+            border: 1.5px solid #DDE1EE;
+            border-radius: 10px;
+            color: var(--navy);
+            font-family: 'Nunito', sans-serif;
+            font-size: .95rem; font-weight: 600;
+            padding: 12px 14px 12px 42px;
+            transition: all .2s ease;
+            outline: none;
+        }
+        .input-wrap input:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(255,107,43,.12);
+        }
+        .input-wrap input:focus + i,
+        .input-wrap:has(input:focus) i { color: var(--orange); }
+
+        .input-wrap .eye-btn {
+            position: absolute; right: 30px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none;
+            color: #9BA3BF; cursor: pointer;
+            padding: 4px; font-size: .88rem;
+            transition: color .2s ease;
+            pointer-events: all;
+        }
+        .input-wrap .eye-btn:hover { color: var(--navy); }
+
+        .error-box {
+            background: #FEF2F2;
+            border: 1.5px solid #FECACA;
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex; align-items: center; gap: 10px;
+            font-size: .85rem; font-weight: 700; color: #DC2626;
+            margin-bottom: 20px;
+            animation: shake .4s ease;
+        }
+        @@keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+        }
+
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(135deg, var(--orange), #ff8444);
+            color: #fff; border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem; font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(255,107,43,.35);
+            transition: all .25s ease;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            letter-spacing: .02em;
+            animation: fadeUp .5s .3s ease both;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(255,107,43,.45);
+        }
+        .btn-login:active { transform: translateY(0); }
+        .btn-login .spinner { display: none; width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; }
+        @@keyframes spin { to { transform: rotate(360deg); } }
+
+        .creds-hint {
+            margin-top: 24px;
+            background: #EEF2FF;
+            border: 1.5px solid #C7D2FE;
+            border-radius: 10px;
+            padding: 14px 16px;
+            animation: fadeUp .5s .4s ease both;
+        }
+        .creds-hint .ch-title {
+            font-size: .72rem; font-weight: 800;
+            color: #6366F1; text-transform: uppercase;
+            letter-spacing: .08em; margin-bottom: 8px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .creds-hint .ch-row {
+            display: flex; justify-content: space-between;
+            font-size: .82rem; color: #4338CA;
+            padding: 3px 0;
+        }
+        .creds-hint .ch-row span:first-child { font-weight: 600; color: #6366F1; }
+        .creds-hint .ch-row span:last-child { font-weight: 800; font-family: monospace; letter-spacing: .05em; }
+
+        .login-footer {
+            position: absolute; bottom: 24px; left: 48px; right: 48px;
+            text-align: center;
+            font-size: .75rem; color: #9BA3BF; font-weight: 500;
+        }
+
+        @@keyframes fadeUp { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform:none; } }
+
+        @@media (max-width: 768px) {
+            .left-panel { display: none; }
+            .right-panel { width: 100%; padding: 40px 28px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="left-panel">
+    <div class="grid-deco"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="left-content">
+        <div class="brand-mark">
+            <div class="brand-mark-icon"><i class="fas fa-car"></i></div>
+            <div class="brand-mark-text">
+                <div class="t1">CarRental</div>
+                <div class="t2">Management Pro</div>
+            </div>
+        </div>
+
+        <h1 class="hero-title">
+            Gérez votre<br />
+            flotte avec<br />
+            <span>efficacité</span>
+        </h1>
+
+        <p class="hero-sub">
+            Plateforme complète de gestion de location de voitures — voitures, clients, contrats et revenus en un seul endroit.
+        </p>
+
+        <div class="feature-list">
+            <div class="feature-item">
+                <div class="fi-icon"><i class="fas fa-car-side"></i></div>
+                <div class="fi-text">Gestion du parc automobile avec photos</div>
+            </div>
+            <div class="feature-item">
+                <div class="fi-icon"><i class="fas fa-users"></i></div>
+                <div class="fi-text">Base clients et historique de locations</div>
+            </div>
+            <div class="feature-item">
+                <div class="fi-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="fi-text">Tableau de bord et suivi des revenus</div>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="sv">100%</div>
+                <div class="sl">Sécurisé</div>
+            </div>
+            <div class="stat-item">
+                <div class="sv">24/7</div>
+                <div class="sl">Disponible</div>
+            </div>
+            <div class="stat-item">
+                <div class="sv">Fast</div>
+                <div class="sl">Performance</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+    <div class="login-header">
+        <h2>Connexion</h2>
+        <p>Connectez-vous à votre espace administrateur</p>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="error-box">
+            <i class="fas fa-exclamation-circle"></i>
+            @ViewBag.Error
+        </div>
+    }
+
+    <form method="post" asp-action="Login" id="loginForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+
+        <div class="form-group">
+            <label for="username">Nom d'utilisateur</label>
+            <div class="input-wrap">
+                <i class="fas fa-user"></i>
+                <input type="text" id="username" name="email" placeholder="admin" autocomplete="username" required />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <div class="input-wrap">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" name="password" placeholder="••••••••••" autocomplete="current-password" required />
+                <button type="button" class="eye-btn" onclick="togglePassword()" id="eyeBtn">
+                    <i class="fas fa-eye" id="eyeIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-login" id="loginBtn">
+            <div class="spinner" id="spinner"></div>
+            <i class="fas fa-sign-in-alt" id="loginIcon"></i>
+            <span id="loginText">Se connecter</span>
+        </button>
+    </form>
+
+    <div class="creds-hint">
+        <div class="ch-title"><i class="fas fa-key"></i> Identifiants par défaut</div>
+        <div class="ch-row"><span>Utilisateur</span><span>admin</span></div>
+        <div class="ch-row"><span>Mot de passe</span><span>CarRental2024!</span></div>
+    </div>
+
+    <div class="login-footer">
+        CarRental Management © @DateTime.Now.Year — Accès réservé aux administrateurs
+    </div>
+</div>
+
+<script>
+    function togglePassword() {
+        const inp = document.getElementById('password');
+        const icon = document.getElementById('eyeIcon');
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            icon.className = 'fas fa-eye-slash';
+        } else {
+            inp.type = 'password';
+            icon.className = 'fas fa-eye';
+        }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function () {
+        const btn = document.getElementById('loginBtn');
+        const spinner = document.getElementById('spinner');
+        const icon = document.getElementById('loginIcon');
+        const text = document.getElementById('loginText');
+        spinner.style.display = 'block';
+        icon.style.display = 'none';
+        text.textContent = 'Connexion...';
+        btn.disabled = true;
+        btn.style.opacity = '.8';
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+@model PortailViewModel
+@{ ViewData["Title"] = "Nos Voitures"; Layout = "~/Views/Shared/_LayoutPortail.cshtml"; }
+
+<!-- HERO -->
+<div style="background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 60%,#142850 100%);padding:64px 24px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-60px;right:10%;width:300px;height:300px;background:radial-gradient(circle,rgba(255,107,43,.2),transparent 70%);pointer-events:none"></div>
+    <div style="position:absolute;bottom:-40px;left:5%;width:200px;height:200px;background:radial-gradient(circle,rgba(255,255,255,.04),transparent 70%);pointer-events:none"></div>
+    <div style="max-width:900px;margin:0 auto;text-align:center;position:relative">
+        <div style="font-size:.75rem;font-weight:800;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px">Location de voitures au Maroc</div>
+        <h1 style="font-family:'Playfair Display',serif;font-size:3rem;font-weight:900;color:#fff;line-height:1.1;margin-bottom:16px">
+            Trouvez la voiture<br/><span style="background:linear-gradient(135deg,var(--orange),var(--orange-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">parfaite</span> pour vous
+        </h1>
+        <p style="color:rgba(255,255,255,.55);font-size:1rem;margin-bottom:36px">Réservez en quelques clics — Aucun compte requis</p>
+
+        <!-- Search form -->
+        <div style="background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);padding:20px 24px">
+            <form method="get" action="/Portail/Index" class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label" style="color:rgba(255,255,255,.6)">Date de départ</label>
+                    <input type="date" name="dateDebut" class="form-control" value="@Model.DateRecherche.ToString("yyyy-MM-dd")" style="background:rgba(255,255,255,.95)" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" style="color:rgba(255,255,255,.6)">Date de retour</label>
+                    <input type="date" name="dateFin" class="form-control" value="@Model.DateFin.ToString("yyyy-MM-dd")" style="background:rgba(255,255,255,.95)" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" style="color:rgba(255,255,255,.6)">Catégorie</label>
+                    <select name="categorie" class="form-select" style="background:rgba(255,255,255,.95)">
+                        <option value="">Toutes les catégories</option>
+                        <option value="Économique" selected="@(Model.Categorie=="Économique")">🚗 Économique</option>
+                        <option value="Berline" selected="@(Model.Categorie=="Berline")">🚙 Berline</option>
+                        <option value="SUV" selected="@(Model.Categorie=="SUV")">🚕 SUV</option>
+                        <option value="Luxe" selected="@(Model.Categorie=="Luxe")">🏎️ Luxe</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn-primary-custom w-100" style="justify-content:center;padding:11px">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- RESULTS -->
+<div style="max-width:1280px;margin:0 auto;padding:36px 24px">
+    <!-- Summary bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+        <div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;color:var(--navy)">
+                @Model.Voitures.Count voiture(s) disponible(s)
+            </div>
+            <div style="font-size:.82rem;color:var(--gray-400);margin-top:3px">
+                Du @Model.DateRecherche.ToString("dd/MM/yyyy") au @Model.DateFin.ToString("dd/MM/yyyy")
+            </div>
+        </div>
+        @if (!string.IsNullOrEmpty(Model.Categorie) || !string.IsNullOrEmpty(Model.Recherche))
+        {
+            <a href="/Portail/Index?dateDebut=@Model.DateRecherche.ToString("yyyy-MM-dd")&dateFin=@Model.DateFin.ToString("yyyy-MM-dd")" class="btn-ghost" style="font-size:.82rem">✕ Effacer les filtres</a>
+        }
+    </div>
+
+    @if (!Model.Voitures.Any())
+    {
+        <div style="text-align:center;padding:80px 20px;color:var(--gray-400)">
+            <i class="fas fa-car-side" style="font-size:3rem;opacity:.2;display:block;margin-bottom:16px"></i>
+            <div style="font-weight:700;font-size:1rem">Aucune voiture disponible pour ces dates</div>
+            <p style="font-size:.88rem;margin-top:8px">Essayez d'autres dates ou catégories</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @{ int idx=0; }
+            @foreach (var v in Model.Voitures)
+            {
+                <div class="col-sm-6 col-lg-4 col-xl-3 fade-up" style="animation-delay:@(idx*0.06)s">
+                    <div class="car-card">
+                        <div class="car-img">
+                            @if (v.ImagePrincipale != null)
+                            { <img src="@v.ImagePrincipale" alt="@v.Marque @v.Modele" /> }
+                            else
+                            { <i class="fas fa-car no-img"></i> }
+                            <div class="dispo-pin"><span class="badge-pill bp-green">Disponible</span></div>
+                        </div>
+                        <div class="car-body">
+                            <div class="car-name">@v.Marque @v.Modele</div>
+                            <div class="car-meta">@v.Annee · @v.Categorie</div>
+                            <div class="car-price">@v.PrixParJour.ToString("N0") <span style="font-size:.75rem;font-weight:500;color:var(--gray-400)">DH/jour</span></div>
+                            @{
+                                var jours = Math.Max(1, (Model.DateFin - Model.DateRecherche).Days);
+                                var total = v.PrixParJour * jours;
+                            }
+                            <div style="font-size:.78rem;color:var(--gray-400);margin-top:4px">
+                                @jours jour(s) = <strong style="color:var(--navy)">@total.ToString("N0") DH</strong>
+                            </div>
+                        </div>
+                        <div class="car-footer">
+                            <a href="/Portail/Voiture/@v.Id?dateDebut=@Model.DateRecherche.ToString("yyyy-MM-dd")&dateFin=@Model.DateFin.ToString("yyyy-MM-dd")" class="btn-ghost" style="flex:1;justify-content:center;font-size:.82rem">
+                                <i class="fas fa-eye"></i> Détails
+                            </a>
+                            <a href="/Portail/Demande/@v.Id?dateDebut=@Model.DateRecherche.ToString("yyyy-MM-dd")&dateFin=@Model.DateFin.ToString("yyyy-MM-dd")" class="btn-primary-custom" style="flex:1;justify-content:center;font-size:.82rem;padding:8px 12px">
+                                <i class="fas fa-key"></i> Réserver
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                idx++;
+            }
+        </div>
+    }
+</div>

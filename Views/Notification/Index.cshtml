@@ -1,0 +1,119 @@
+﻿@model List<CarRental.Models.Notification>
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+    <div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:800;color:var(--navy)">Centre de notifications</div>
+        <div style="font-size:.82rem;color:var(--gray-400);margin-top:3px">
+            <span style="color:var(--orange);font-weight:700">@Model.Count(n => !n.EstLu)</span> non lue(s) sur @Model.Count
+        </div>
+    </div>
+    <div style="display:flex;gap:8px">
+        <form method="post" action="/Notification/ToutMarquerLu" style="margin:0">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn-primary-custom" style="font-size:.85rem;padding:9px 18px">
+                <i class="fas fa-check-double"></i> Tout marquer comme lu
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- TYPE FILTER -->
+@{
+    var types = new[]{
+        ("","Toutes","fas fa-bell"),
+        ("NouvelleDemandeLocation","Nouvelles demandes","fas fa-inbox"),
+        ("RetourTardif","Retards","fas fa-exclamation-triangle"),
+        ("SignalementDommage","Dommages","fas fa-car-crash"),
+        ("ConfirmationLocation","Confirmations","fas fa-check-circle"),
+    };
+    var currentFilter = Context.Request.Query["type"].ToString();
+}
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px">
+    @foreach (var (val, lbl, ico) in types)
+    {
+        var isA = currentFilter == val;
+        var cnt = val == "" ? Model.Count : Model.Count(n => n.Type == val);
+        <a href="/Notification/Index?type=@val"
+               style="padding:7px 14px;border-radius:20px;font-size:.8rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:6px;border:1.5px solid;transition:all .2s ease;
+            background:@(isA ? "var(--navy)" : "var(--white)");color:@(isA ? "#fff" : "var(--gray-600)");border-color:@(isA ? "var(--navy)" : "var(--gray-200)")">
+            <i class="@ico" style="font-size:.7rem"></i>@lbl
+            <span style="padding:0 6px;border-radius:10px;font-size:.65rem;background:@(isA ? "rgba(255,255,255,.2)" : "var(--gray-100)");color:@(isA ? "#fff" : "var(--gray-400)")">@cnt</span>
+        </a>
+    }
+</div>
+
+@{
+    var filtered = string.IsNullOrEmpty(currentFilter) ? Model : Model.Where(n => n.Type == currentFilter).ToList();
+}
+
+@if (!filtered.Any())
+{
+    <div class="card">
+        <div style="text-align:center;padding:60px;color:var(--gray-400)">
+            <i class="fas fa-bell-slash" style="font-size:2.5rem;opacity:.2;display:block;margin-bottom:14px"></i>
+            <div style="font-weight:700">Aucune notification</div>
+        </div>
+    </div>
+}
+else
+{
+    <div style="display:flex;flex-direction:column;gap:8px">
+        @foreach (var n in filtered.OrderByDescending(n => n.DateCreation))
+        {
+            var (iconCls, dotBg, dotCol) = n.Type switch
+            {
+                "NouvelleDemandeLocation" => ("fas fa-inbox", "#EEF2FF", "#6366F1"),
+                "RetourTardif" => ("fas fa-exclamation-triangle", "#FEF2F2", "#DC2626"),
+                "RetourAnticipe" => ("fas fa-undo", "#FFFBEB", "#D97706"),
+                "SignalementDommage" => ("fas fa-car-crash", "#FEF2F2", "#EF4444"),
+                "ConfirmationLocation" => ("fas fa-check-circle", "#ECFDF5", "#059669"),
+                "DemandeRejetee" => ("fas fa-times-circle", "#FEF2F2", "#DC2626"),
+                "Annulation" => ("fas fa-ban", "#FEF2F2", "#DC2626"),
+                _ => ("fas fa-bell", "var(--gray-100)", "var(--gray-400)")
+            };
+            <div style="background:var(--white);border:1px solid @(n.EstLu ? "var(--gray-200)" : "#FED7AA");border-radius:var(--radius-sm);padding:14px 18px;display:flex;align-items:flex-start;gap:14px;box-shadow:var(--shadow-sm);@(n.EstLu ? "" : "background:linear-gradient(135deg,#FFFBF7,var(--white));border-left:3px solid var(--orange)")">
+                <!-- Icon -->
+                <div style="width:40px;height:40px;border-radius:10px;background:@dotBg;color:@dotCol;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0">
+                    <i class="@iconCls"></i>
+                </div>
+                <!-- Content -->
+                <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:3px">
+                        <div style="font-weight:800;font-size:.88rem;color:var(--navy)">@n.Titre</div>
+                        @if (!n.EstLu)
+                        {
+                            <span style="width:7px;height:7px;border-radius:50%;background:var(--orange);flex-shrink:0"></span>
+                        }
+                    </div>
+                    <div style="font-size:.82rem;color:var(--gray-600);line-height:1.4;margin-bottom:6px">@n.Message</div>
+                    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                        <span style="font-size:.72rem;color:var(--gray-400)">
+                            <i class="fas fa-clock me-1"></i>@n.DateCreation.ToString("dd/MM/yyyy HH:mm")
+                        </span>
+                        @if (!string.IsNullOrEmpty(n.LienAction) && n.LienAction != "#")
+                        {
+                            <a href="@n.LienAction" style="font-size:.75rem;font-weight:700;color:var(--orange);text-decoration:none">
+                                Voir la page <i class="fas fa-arrow-right ms-1" style="font-size:.6rem"></i>
+                            </a>
+                        }
+                    </div>
+                </div>
+                <!-- Actions -->
+                <div style="display:flex;gap:6px;flex-shrink:0">
+                    <form method="post" action="/Notification/@(n.EstLu?"MarquerNonLu":"MarquerLu")/@n.Id" style="margin:0">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" title="@(n.EstLu ? "Marquer non lu" : "Marquer lu")"
+                                style="width:30px;height:30px;border-radius:7px;background:var(--gray-100);border:1px solid var(--gray-200);cursor:pointer;color:var(--gray-400);font-size:.75rem;transition:all .2s ease"
+                                onmouseenter="this.style.background='var(--gray-200)';this.style.color='var(--navy)'"
+                                onmouseleave="this.style.background='var(--gray-100)';this.style.color='var(--gray-400)'">
+                            <i class="fas @(n.EstLu ? "fa-eye-slash" : "fa-eye")"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+}

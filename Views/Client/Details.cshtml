@@ -1,0 +1,222 @@
+﻿@model CarRental.Models.Client
+@{
+    ViewData["Title"] = "Détails client — " + Model.NomComplet;
+}
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/Client/Index" style="width:36px;height:36px;border-radius:9px;background:var(--gray-100);border:1px solid var(--gray-200);display:flex;align-items:center;justify-content:center;color:var(--gray-600);text-decoration:none;font-size:.82rem" onmouseenter="this.style.background='var(--gray-200)'" onmouseleave="this.style.background='var(--gray-100)'">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;color:var(--navy)">@Model.NomComplet</div>
+    @if (!Model.CompteActif)
+    {
+        <span class="badge-pill bp-red"><i class="fas fa-ban"></i> Compte désactivé</span>
+    }
+    else if (Model.ACompte)
+    {
+
+        <span class="badge-pill bp-green"><i class="fas fa-user-check"></i> Compte actif</span>
+    }
+    else
+    {
+
+        <span class="badge-pill bp-gray">Sans compte</span>
+    }
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card" style="margin-bottom:16px">
+            <div style="padding:24px;text-align:center;border-bottom:1px solid var(--gray-100)">
+                <div style="width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy-light));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;color:#fff;margin:0 auto 14px;box-shadow:0 4px 14px rgba(15,32,68,.2)">
+                    @Model.Prenom[0]@Model.Nom[0]
+                </div>
+                <div style="font-weight:800;font-size:1rem;color:var(--navy)">@Model.NomComplet</div>
+                <div style="font-size:.78rem;color:var(--gray-400);margin-top:3px">Inscrit le @Model.DateInscription.ToString("dd/MM/yyyy")</div>
+            </div>
+            <div style="padding:18px 20px">
+                @foreach (var (ico, lbl, val) in new[]{
+                    ("fas fa-id-card","CIN",Model.CIN),
+                    ("fas fa-phone","Tél.",Model.Telephone),
+                    ("fas fa-envelope","Email",Model.Email),
+                    ("fas fa-map-marker-alt","Adresse",Model.Adresse??"-"),
+                })
+                {
+                    <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--gray-50)">
+                        <i class="@ico" style="color:var(--orange);font-size:.8rem;width:14px;text-align:center;flex-shrink:0"></i>
+                        <span style="font-size:.75rem;color:var(--gray-400);width:50px;flex-shrink:0">@lbl</span>
+                        <span style="font-size:.82rem;font-weight:600;color:var(--navy)">@val</span>
+                    </div>
+                }
+                <div style="display:flex;gap:8px;margin-top:16px">
+                    <a href="/Client/Edit/@Model.Id" class="btn-primary-custom" style="flex:1;justify-content:center;font-size:.8rem;padding:8px">
+                        <i class="fas fa-pen"></i> Modifier
+                    </a>
+                    <a href="/Client/Incidents/@Model.Id" style="flex:1;background:var(--gray-100);color:var(--gray-600);border:1px solid var(--gray-200);font-weight:700;border-radius:var(--radius-sm);padding:8px;font-size:.8rem;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s ease" onmouseenter="this.style.background='var(--gray-200)'" onmouseleave="this.style.background='var(--gray-100)'">
+                        <i class="fas fa-car-crash"></i> Incidents
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="padding:14px 18px;border-bottom:1px solid var(--gray-100);font-weight:800;color:var(--navy);font-size:.88rem">
+                <i class="fas fa-shield-alt me-2" style="color:var(--orange)"></i>Gestion du compte
+            </div>
+            <div style="padding:16px 18px">
+                @if (Model.CompteActif)
+                {
+                    <div style="margin-bottom:14px;padding:10px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:var(--radius-sm);font-size:.82rem;color:#065F46;font-weight:700">
+                        <i class="fas fa-check-circle me-2"></i>Compte actif
+                    </div>
+                    <form method="post" action="/Client/Desactiver/@Model.Id" id="formDesactiver">
+                        @Html.AntiForgeryToken()
+                        <div style="margin-bottom:10px">
+                            <label class="form-label">Motif *</label>
+                            <input type="text" name="motif" class="form-control" placeholder="Ex: Paiement impayé..." required />
+                        </div>
+                        <div style="margin-bottom:12px">
+                            <label class="form-label">Remarque (optionnel)</label>
+                            <textarea name="remarque" class="form-control" rows="2" placeholder="Note interne..."></textarea>
+                        </div>
+                        <button type="button" onclick="confirmerDesact()"
+                                style="width:100%;background:linear-gradient(135deg,#DC2626,#B91C1C);color:#fff;border:none;border-radius:var(--radius-sm);padding:10px;font-size:.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px">
+                            <i class="fas fa-ban"></i> Désactiver le compte
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div style="margin-bottom:14px;padding:10px;background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--radius-sm);font-size:.82rem">
+                        <div style="font-weight:700;color:#B91C1C">Compte désactivé</div>
+                        @if (!string.IsNullOrEmpty(Model.MotifDesactivation))
+                        {
+                            <div style="color:#DC2626;margin-top:3px">Motif : @Model.MotifDesactivation</div>
+                        }
+                        @if (Model.DateDesactivation.HasValue)
+                        {
+                            <div style="color:var(--gray-400);font-size:.75rem;margin-top:2px">Le @Model.DateDesactivation.Value.ToString("dd/MM/yyyy")</div>
+                        }
+                    </div>
+                    <form method="post" action="/Client/Activer/@Model.Id">
+                        @Html.AntiForgeryToken()
+                        <div style="margin-bottom:12px">
+                            <label class="form-label">Remarque (optionnel)</label>
+                            <textarea name="remarque" class="form-control" rows="2" placeholder="Ex: Situation régularisée..."></textarea>
+                        </div>
+                        <button type="submit"
+                                style="width:100%;background:linear-gradient(135deg,#059669,#047857);color:#fff;border:none;border-radius:var(--radius-sm);padding:10px;font-size:.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px">
+                            <i class="fas fa-user-check"></i> Réactiver le compte
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        @{
+            var total = Model.Locations.Count;
+            var actives = Model.Locations.Count(l => l.Statut == "EnCours");
+            var terminees = Model.Locations.Count(l => l.Statut == "Terminée");
+            var chiffreAffaires = Model.Locations.Where(l => l.Statut == "Terminée").Sum(l => l.TotalAvecDommage);
+        }
+        <div class="row g-3 mb-4">
+            @foreach (var (val, lbl, col) in new[]{
+                (total.ToString(),"Locations","#6366F1"),
+                (actives.ToString(),"En cours","#D97706"),
+                (terminees.ToString(),"Terminées","#059669"),
+                (chiffreAffaires.ToString("N0")+" DH","CA total","var(--orange)"),
+            })
+            {
+                <div class="col-6 col-md-3">
+                    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow-sm)">
+                        <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;color:@col">@val</div>
+                        <div style="font-size:.7rem;font-weight:700;color:var(--gray-400);text-transform:uppercase;margin-top:3px">@lbl</div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between">
+                <div style="font-weight:800;color:var(--navy);font-size:.9rem"><i class="fas fa-history me-2" style="color:var(--orange)"></i>Historique des locations (@total)</div>
+                <a href="/Location/Create" class="btn-primary-custom" style="font-size:.78rem;padding:7px 14px"><i class="fas fa-plus"></i> Nouvelle</a>
+            </div>
+            @if (!Model.Locations.Any())
+            {
+                <div style="text-align:center;padding:40px;color:var(--gray-400)">
+                    <i class="fas fa-file-contract" style="font-size:2rem;opacity:.2;display:block;margin-bottom:10px"></i>
+                    <div style="font-weight:600;font-size:.88rem">Aucune location</div>
+                </div>
+            }
+            else
+            {
+                <table style="width:100%;border-collapse:collapse">
+                    <thead>
+                        <tr style="background:var(--gray-50)">
+                            @foreach (var h in new[] { "Véhicule", "Période", "Montant", "Statut", "" })
+                            {
+                                <th style="padding:11px 16px;font-size:.68rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;text-align:left">@h</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var loc in Model.Locations.OrderByDescending(l => l.DateCreation))
+                        {
+                            <tr style="border-top:1px solid var(--gray-100)">
+                                <td style="padding:11px 16px;font-weight:700;font-size:.88rem;color:var(--navy)">@loc.Voiture?.Marque @loc.Voiture?.Modele</td>
+                                <td style="padding:11px 16px;font-size:.82rem;color:var(--gray-400)">@loc.DateDebut.ToString("dd/MM") → @loc.DateFin.ToString("dd/MM/yy")</td>
+                                <td style="padding:11px 16px;font-weight:700;color:var(--navy)">@loc.TotalAvecDommage.ToString("N0") DH</td>
+                                <td style="padding:11px 16px">
+                                    @switch (loc.Statut)
+                                    {
+                                        case "EnCours":
+                                            <span class="badge-pill bp-yellow">En cours</span>
+                                            break;
+                                        case "Terminée":
+
+                                            <span class="badge-pill bp-green">Terminée</span>
+                                            break;
+                                        default:
+
+                                            <span class="badge-pill bp-gray">@loc.Statut</span>
+                                            break;
+                                    }
+                                    @if (loc.ADommage)
+                                    {
+                                        <span class="badge-pill bp-red ms-1" style="font-size:.65rem"><i class="fas fa-car-crash"></i></span>
+                                    }
+                                </td>
+                                <td style="padding:11px 16px;text-align:right">
+                                    <a href="/Location/Details/@loc.Id" style="color:var(--orange);font-size:.78rem;font-weight:700;text-decoration:none">Voir →</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+<div id="modalDesact" style="display:none;position:fixed;inset:0;background:rgba(15,32,68,.5);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:var(--white);border-radius:var(--radius);padding:28px;width:360px;max-width:90vw;box-shadow:var(--shadow-lg)">
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:800;color:#DC2626;margin-bottom:8px">Désactiver le compte ?</div>
+        <p style="font-size:.85rem;color:var(--gray-400);margin-bottom:20px">@Model.NomComplet ne pourra plus effectuer de réservations.</p>
+        <div style="display:flex;gap:10px">
+            <button onclick="document.getElementById('formDesactiver').submit()" style="flex:1;background:linear-gradient(135deg,#DC2626,#B91C1C);color:#fff;border:none;border-radius:var(--radius-sm);padding:11px;font-weight:700;cursor:pointer">Confirmer</button>
+            <button onclick="document.getElementById('modalDesact').style.display='none'" style="flex:1;background:var(--gray-100);color:var(--gray-600);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:11px;font-weight:700;cursor:pointer">Annuler</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmerDesact() {
+            if (!document.querySelector('[name=motif]')?.value.trim()) { alert('Motif obligatoire'); return; }
+            document.getElementById('modalDesact').style.display = 'flex';
+        }
+        document.getElementById('modalDesact')?.addEventListener('click', e => { if (e.target.id === 'modalDesact') e.target.style.display = 'none'; });
+    </script>
+}

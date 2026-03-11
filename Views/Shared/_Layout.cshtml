@@ -1,0 +1,423 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CarRental</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --navy: #0F2044; --navy-light: #1a3260;
+            --orange: #FF6B2B; --orange-light: #FF8C55;
+            --cream: #FAFAF7; --white: #FFFFFF;
+            --gray-50: #F8F9FC; --gray-100: #EEF0F6;
+            --gray-200: #DDE1EE; --gray-400: #9BA3BF;
+            --gray-600: #5C6484; --gray-800: #2D3459;
+            --text: #1A2240;
+            --sidebar-w: 270px;
+            --shadow-sm: 0 1px 3px rgba(15,32,68,.08),0 1px 2px rgba(15,32,68,.04);
+            --shadow: 0 4px 16px rgba(15,32,68,.10),0 2px 6px rgba(15,32,68,.06);
+            --shadow-lg: 0 12px 40px rgba(15,32,68,.14),0 4px 12px rgba(15,32,68,.08);
+            --radius: 14px; --radius-sm: 8px;
+        }
+        * { box-sizing: border-box; margin:0; padding:0; }
+        body { font-family:'Nunito',sans-serif; background:var(--gray-50); color:var(--text); min-height:100vh; }
+
+        /* SIDEBAR */
+        .sidebar { position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh; background:var(--navy); display:flex; flex-direction:column; z-index:1000; box-shadow:4px 0 24px rgba(15,32,68,.18); overflow:hidden; }
+        .sidebar::before { content:''; position:absolute; top:-80px; right:-80px; width:220px; height:220px; background:radial-gradient(circle,rgba(255,107,43,.18) 0%,transparent 70%); pointer-events:none; }
+        .sidebar::after { content:''; position:absolute; bottom:60px; left:-60px; width:180px; height:180px; background:radial-gradient(circle,rgba(255,107,43,.10) 0%,transparent 70%); pointer-events:none; }
+        .sidebar-brand { padding:28px 24px 22px; border-bottom:1px solid rgba(255,255,255,.08); }
+        .brand-logo { display:flex; align-items:center; gap:12px; text-decoration:none; }
+        .brand-icon { width:44px; height:44px; background:linear-gradient(135deg,var(--orange),#ff8c3a); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#fff; box-shadow:0 4px 12px rgba(255,107,43,.4); flex-shrink:0; transition:transform .3s ease; }
+        .brand-logo:hover .brand-icon { transform:rotate(-8deg) scale(1.05); }
+        .brand-text .b1 { font-family:'Playfair Display',serif; font-size:1.25rem; font-weight:800; color:#fff; }
+        .brand-text .b2 { font-size:.68rem; font-weight:600; color:rgba(255,255,255,.35); text-transform:uppercase; letter-spacing:.1em; }
+        .sidebar-nav { padding:16px 14px; flex:1; overflow-y:auto; }
+        .nav-label { font-size:.62rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.3); padding:14px 10px 6px; }
+        .nav-item { margin-bottom:2px; }
+        .nav-link { display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; color:rgba(255,255,255,.55); text-decoration:none; font-size:.88rem; font-weight:600; transition:all .22s ease; position:relative; }
+        .nav-link .nav-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.82rem; transition:all .22s ease; background:rgba(255,255,255,.06); flex-shrink:0; }
+        .nav-link:hover { color:rgba(255,255,255,.9); background:rgba(255,255,255,.07); }
+        .nav-link:hover .nav-icon { background:rgba(255,107,43,.2); color:var(--orange-light); }
+        .nav-link.active { color:#fff; background:linear-gradient(135deg,rgba(255,107,43,.22),rgba(255,107,43,.12)); box-shadow:inset 0 0 0 1px rgba(255,107,43,.25); }
+        .nav-link.active .nav-icon { background:linear-gradient(135deg,var(--orange),#ff8c3a); color:#fff; box-shadow:0 3px 10px rgba(255,107,43,.4); }
+        .nav-link.active::before { content:''; position:absolute; left:0; top:20%; bottom:20%; width:3px; border-radius:0 3px 3px 0; background:var(--orange); }
+        .sidebar-footer { padding:16px 20px; border-top:1px solid rgba(255,255,255,.07); }
+        .sf-inner { background:rgba(255,255,255,.05); border-radius:10px; padding:12px 14px; display:flex; align-items:center; gap:10px; }
+        .sf-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--orange),#ff8c3a); display:flex; align-items:center; justify-content:center; font-size:.8rem; color:#fff; font-weight:700; }
+        .sf-name { font-size:.82rem; font-weight:700; color:#fff; }
+        .sf-role { font-size:.68rem; color:rgba(255,255,255,.35); }
+
+        /* MAIN */
+        .main-content { margin-left:var(--sidebar-w); min-height:100vh; display:flex; flex-direction:column; }
+        .topbar { height:68px; background:var(--white); border-bottom:1px solid var(--gray-200); display:flex; align-items:center; padding:0 32px; gap:16px; position:sticky; top:0; z-index:100; box-shadow:var(--shadow-sm); }
+        .topbar-title { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:var(--navy); flex:1; }
+        .topbar-badge { padding:7px 16px; border-radius:20px; font-size:.8rem; font-weight:700; display:flex; align-items:center; gap:7px; animation:slideIn .4s ease; }
+        .topbar-badge.success { background:#ECFDF5; color:#059669; border:1px solid #A7F3D0; }
+        .topbar-badge.error { background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; }
+        @@keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
+        .page-content { padding:28px 32px; flex:1; }
+
+        /* CARDS */
+        .card { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); box-shadow:var(--shadow-sm); transition:box-shadow .25s ease; }
+        .card:hover { box-shadow:var(--shadow); }
+        .card-header { background:transparent; border-bottom:1px solid var(--gray-100); padding:18px 22px; font-weight:700; font-size:.92rem; color:var(--navy); }
+        .card-body { padding:22px; }
+
+        /* STAT CARDS */
+        .stat-card { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow-sm); transition:all .3s ease; position:relative; overflow:hidden; animation:fadeUp .5s ease both; }
+        .stat-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
+        .stat-icon { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; margin-bottom:14px; }
+        .stat-value { font-family:'Playfair Display',serif; font-size:2rem; font-weight:800; line-height:1; color:var(--navy); }
+        .stat-label { font-size:.75rem; font-weight:700; color:var(--gray-400); margin-top:5px; text-transform:uppercase; letter-spacing:.05em; }
+        @@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+
+        /* BUTTONS */
+        .btn-primary-custom { background:linear-gradient(135deg,var(--orange),#ff8444); color:#fff; border:none; font-weight:700; font-family:'Nunito',sans-serif; border-radius:var(--radius-sm); padding:9px 20px; font-size:.88rem; box-shadow:0 3px 12px rgba(255,107,43,.3); transition:all .22s ease; display:inline-flex; align-items:center; gap:7px; cursor:pointer; }
+        .btn-primary-custom:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(255,107,43,.4); color:#fff; }
+        .btn-navy { background:var(--navy); color:#fff; border:none; font-weight:700; border-radius:var(--radius-sm); padding:9px 20px; font-size:.88rem; transition:all .22s ease; display:inline-flex; align-items:center; gap:7px; cursor:pointer; }
+        .btn-navy:hover { background:var(--navy-light); color:#fff; transform:translateY(-1px); }
+        .btn-ghost { background:var(--gray-100); color:var(--gray-600); border:1px solid var(--gray-200); font-weight:600; border-radius:var(--radius-sm); padding:9px 16px; font-size:.85rem; transition:all .2s ease; display:inline-flex; align-items:center; gap:6px; cursor:pointer; text-decoration:none; }
+        .btn-ghost:hover { background:var(--gray-200); color:var(--navy); }
+        .btn-icon { width:34px; height:34px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-size:.82rem; transition:all .2s ease; border:none; cursor:pointer; }
+        .btn-icon.view { background:#EEF2FF; color:#6366F1; }
+        .btn-icon.view:hover { background:#6366F1; color:#fff; }
+        .btn-icon.edit { background:#FFF7ED; color:var(--orange); }
+        .btn-icon.edit:hover { background:var(--orange); color:#fff; }
+        .btn-icon.del { background:#FEF2F2; color:#DC2626; }
+        .btn-icon.del:hover { background:#DC2626; color:#fff; }
+        .btn-icon.ret { background:#ECFDF5; color:#059669; }
+        .btn-icon.ret:hover { background:#059669; color:#fff; }
+        .btn-success-soft { background:#ECFDF5; color:#059669; border:1px solid #A7F3D0; font-weight:700; border-radius:var(--radius-sm); padding:8px 16px; font-size:.85rem; transition:all .2s ease; display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
+        .btn-success-soft:hover { background:#059669; color:#fff; }
+        .btn-danger-soft { background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; font-weight:700; border-radius:var(--radius-sm); padding:8px 16px; font-size:.85rem; transition:all .2s ease; display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
+        .btn-danger-soft:hover { background:#DC2626; color:#fff; }
+
+        /* TABLES */
+        .table { color:var(--text); }
+        .table thead th { background:var(--gray-50); border-bottom:2px solid var(--gray-200); border-top:none; font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.07em; color:var(--gray-400); padding:13px 16px; }
+        .table tbody tr { border-bottom:1px solid var(--gray-100); transition:background .15s ease; }
+        .table tbody tr:hover { background:var(--gray-50); }
+        .table tbody td { padding:13px 16px; vertical-align:middle; font-size:.88rem; border-top:none; }
+        .table tbody tr:last-child td { border-bottom:none; }
+
+        /* FORMS */
+        .form-control,.form-select { background:var(--white); border:1.5px solid var(--gray-200); border-radius:var(--radius-sm); color:var(--text); font-family:'Nunito',sans-serif; font-size:.9rem; font-weight:500; padding:10px 14px; transition:all .2s ease; }
+        .form-control:focus,.form-select:focus { background:var(--white); border-color:var(--orange); box-shadow:0 0 0 3px rgba(255,107,43,.12); color:var(--text); }
+        .form-control::placeholder { color:var(--gray-400); }
+        .form-label { font-size:.78rem; font-weight:800; color:var(--navy); margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; display:block; }
+
+        /* BADGES */
+        .badge-pill { padding:5px 12px; border-radius:20px; font-size:.72rem; font-weight:700; display:inline-flex; align-items:center; gap:5px; }
+        .badge-pill::before { content:''; width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+        .bp-green { background:#ECFDF5; color:#059669; border:1px solid #A7F3D0; }
+        .bp-green::before { background:#059669; }
+        .bp-red { background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; }
+        .bp-red::before { background:#DC2626; }
+        .bp-yellow { background:#FFFBEB; color:#D97706; border:1px solid #FDE68A; }
+        .bp-yellow::before { background:#D97706; }
+        .bp-gray { background:var(--gray-100); color:var(--gray-600); border:1px solid var(--gray-200); }
+        .bp-gray::before { background:var(--gray-400); }
+        .bp-blue { background:#EEF2FF; color:#6366F1; border:1px solid #C7D2FE; }
+        .bp-blue::before { background:#6366F1; }
+
+        /* PAGE HEADER */
+        .page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; animation:fadeUp .4s ease; }
+        .page-header-title { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:800; color:var(--navy); }
+        .page-header-sub { font-size:.85rem; color:var(--gray-400); margin-top:4px; font-weight:500; }
+
+        /* FILTER BAR */
+        .filter-bar { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); padding:16px 20px; margin-bottom:20px; box-shadow:var(--shadow-sm); animation:fadeUp .45s ease; }
+
+        /* MODAL */
+        .modal-content { border-radius:var(--radius); border:none; box-shadow:var(--shadow-lg); }
+        .modal-header { border-bottom:1px solid var(--gray-100); padding:20px 24px; }
+        .modal-title { font-family:'Playfair Display',serif; font-weight:700; color:var(--navy); font-size:1.2rem; }
+        .modal-body { padding:24px; }
+        .modal-footer { border-top:1px solid var(--gray-100); padding:16px 24px; }
+
+        /* CAR CARD */
+        .car-card { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm); transition:all .3s ease; animation:fadeUp .5s ease both; }
+        .car-card:hover { transform:translateY(-6px); box-shadow:var(--shadow-lg); }
+        .car-img-wrap { height:190px; background:var(--gray-100); display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
+        .car-img-wrap img { width:100%; height:100%; object-fit:cover; transition:transform .4s ease; }
+        .car-card:hover .car-img-wrap img { transform:scale(1.06); }
+        .car-img-wrap .no-img { font-size:3.5rem; color:var(--gray-200); }
+        .car-img-wrap .status-pin { position:absolute; top:10px; right:10px; }
+        .car-body { padding:16px; }
+        .car-name { font-weight:800; font-size:.97rem; color:var(--navy); }
+        .car-meta { font-size:.78rem; color:var(--gray-400); margin-top:2px; }
+        .car-price { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:var(--orange); margin-top:10px; }
+        .car-actions { padding:12px 16px; border-top:1px solid var(--gray-100); display:flex; gap:8px; }
+
+        /* PRICE PREVIEW */
+        .price-preview { background:linear-gradient(135deg,var(--navy),var(--navy-light)); border-radius:var(--radius); padding:20px 24px; color:#fff; display:none; margin-top:16px; }
+        .pp-label { font-size:.72rem; font-weight:700; opacity:.6; text-transform:uppercase; letter-spacing:.08em; }
+        .pp-value { font-family:'Playfair Display',serif; font-size:2.2rem; font-weight:800; color:var(--orange-light); }
+        .pp-detail { font-size:.82rem; opacity:.7; margin-top:4px; }
+
+        /* DAMAGE */
+        .damage-box { background:linear-gradient(135deg,#FFFBEB,#FEF3C7); border:1.5px solid #FDE68A; border-radius:var(--radius); padding:18px 20px; margin-top:16px; }
+        .damage-box-title { font-weight:800; font-size:.88rem; color:#92400E; display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+
+        /* STATUS TABS */
+        .status-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+        .status-tab { padding:7px 18px; border-radius:20px; font-size:.82rem; font-weight:700; cursor:pointer; text-decoration:none; border:1.5px solid var(--gray-200); color:var(--gray-600); background:var(--white); transition:all .2s ease; }
+        .status-tab:hover { border-color:var(--navy); color:var(--navy); }
+        .status-tab.st-all.active { background:var(--navy); color:#fff; border-color:var(--navy); }
+        .status-tab.st-orange.active { background:var(--orange); color:#fff; border-color:var(--orange); }
+        .status-tab.st-green.active { background:#059669; color:#fff; border-color:#059669; }
+        .status-tab.st-gray.active { background:var(--gray-600); color:#fff; border-color:var(--gray-600); }
+
+        /* EMPTY */
+        .empty-state { text-align:center; padding:60px 20px; color:var(--gray-400); }
+        .empty-state i { font-size:3rem; margin-bottom:16px; opacity:.3; display:block; }
+        .empty-state p { font-weight:600; font-size:.95rem; }
+
+        /* FILE UPLOAD */
+        .upload-zone { border:2px dashed var(--gray-200); border-radius:var(--radius-sm); padding:24px; text-align:center; cursor:pointer; transition:all .2s ease; background:var(--gray-50); }
+        .upload-zone:hover,.upload-zone.drag { border-color:var(--orange); background:#FFF7ED; }
+
+        /* STAGGER */
+        .s1{animation-delay:.05s} .s2{animation-delay:.10s} .s3{animation-delay:.15s} .s4{animation-delay:.20s} .s5{animation-delay:.25s} .s6{animation-delay:.30s}
+
+        ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-track{background:var(--gray-50)} ::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:3px}
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <a href="/Home/Index" class="brand-logo">
+            <div class="brand-icon"><i class="fas fa-car"></i></div>
+            <div class="brand-text">
+                <div class="b1">CarRental</div>
+                <div class="b2">Management Pro</div>
+            </div>
+        </a>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-label">Tableau de bord</div>
+        <div class="nav-item">
+            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString()=="Home"?"active":"")" href="/Home/Index">
+                <div class="nav-icon"><i class="fas fa-th-large"></i></div>Dashboard
+            </a>
+        </div>
+        <div class="nav-label">Gestion</div>
+        <div class="nav-item">
+            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString()=="Voiture"?"active":"")" href="/Voiture/Index">
+                <div class="nav-icon"><i class="fas fa-car-side"></i></div>Voitures
+            </a>
+        </div>
+        <div class="nav-item">
+            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString()=="Client"?"active":"")" href="/Client/Index">
+                <div class="nav-icon"><i class="fas fa-users"></i></div>Clients
+            </a>
+        </div>
+        <div class="nav-item">
+            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString()=="Location"?"active":"")" href="/Location/Index">
+                <div class="nav-icon"><i class="fas fa-file-contract"></i></div>Locations
+            </a>
+        </div>
+        <div class="nav-label">Demandes & Incidents</div>
+        <div class="nav-item">
+            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString()=="AdminDemandes"?"active":"")" href="/AdminDemandes/Index">
+                <div class="nav-icon"><i class="fas fa-inbox"></i></div>
+                Demandes
+                <span id="badge-demandes" style="margin-left:auto;background:rgba(255,107,43,.25);color:var(--orange-light);font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:10px;display:none"></span>
+            </a>
+        </div>
+        <div class="nav-item">
+            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString()=="Incident"?"active":"")" href="/Incident/Historique">
+                <div class="nav-icon"><i class="fas fa-car-crash"></i></div>Incidents
+            </a>
+        </div>
+        <div class="nav-label">Actions rapides</div>
+        <div class="nav-item">
+            <a class="nav-link" href="/Location/Create"><div class="nav-icon"><i class="fas fa-plus-circle"></i></div>Nouvelle location</a>
+        </div>
+        <div class="nav-item">
+            <a class="nav-link" href="/Voiture/Create"><div class="nav-icon"><i class="fas fa-car"></i></div>Ajouter voiture</a>
+        </div>
+        <div class="nav-item">
+            <a class="nav-link" href="/Client/Create"><div class="nav-icon"><i class="fas fa-user-plus"></i></div>Ajouter client</a>
+        </div>
+        <div class="nav-item">
+            <a class="nav-link" href="/Portail/Index" target="_blank">
+                <div class="nav-icon"><i class="fas fa-globe"></i></div>Portail public
+            </a>
+        </div>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="sf-inner">
+            <div class="sf-avatar">@(User.Identity?.Name?.Substring(0,1).ToUpper() ?? "A")</div>
+            <div style="flex:1;min-width:0;">
+                <div class="sf-name">@(User.Identity?.Name ?? "Admin")</div>
+                <div class="sf-role">Administrateur</div>
+            </div>
+            <form method="post" action="/Auth/Logout" style="margin:0;">
+                @Html.AntiForgeryToken()
+                <button type="submit" title="Déconnexion" style="background:rgba(255,255,255,.08);border:none;width:28px;height:28px;border-radius:7px;color:rgba(255,255,255,.45);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;transition:all .2s ease;" onmouseenter="this.style.background='rgba(220,38,38,.3)';this.style.color='#FCA5A5'" onmouseleave="this.style.background='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.45)'">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">@ViewData["Title"]</div>
+        @if (TempData["Success"] != null)
+        {
+            <div class="topbar-badge success"><i class="fas fa-check-circle"></i> @TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="topbar-badge error"><i class="fas fa-exclamation-circle"></i> @TempData["Error"]</div>
+        }
+        <!-- NOTIFICATION BELL -->
+        <div class="notif-bell" id="notifBell">
+            <button class="notif-btn" id="notifToggle" onclick="toggleNotifPanel()" aria-label="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notif-count" id="notifCount" style="display:none">0</span>
+            </button>
+            <div class="notif-panel" id="notifPanel">
+                <div class="notif-panel-header">
+                    <span style="font-weight:800;font-size:.9rem;color:var(--navy)">Notifications</span>
+                    <button onclick="toutMarquerLu()" style="background:none;border:none;font-size:.75rem;font-weight:700;color:var(--orange);cursor:pointer;padding:0">Tout marquer lu</button>
+                </div>
+                <div class="notif-list" id="notifList">
+                    <div style="text-align:center;padding:28px;color:var(--gray-400)"><i class="fas fa-spinner fa-spin"></i></div>
+                </div>
+                <a href="/Notification/Index" class="notif-panel-footer">
+                    Voir toutes les notifications <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="page-content">@RenderBody()</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<style>
+/* ── NOTIFICATION BELL ── */
+.notif-bell { position:relative; }
+.notif-btn { position:relative; width:40px; height:40px; border-radius:10px; background:var(--gray-100); border:1px solid var(--gray-200); color:var(--gray-600); font-size:.95rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s ease; }
+.notif-btn:hover { background:var(--gray-200); color:var(--navy); }
+.notif-btn.has-unread { background:#FFF7ED; border-color:#FED7AA; color:var(--orange); animation:bellShake 2s ease infinite; }
+@@keyframes bellShake { 0%,80%,100%{transform:none} 82%{transform:rotate(-12deg)} 86%{transform:rotate(12deg)} 90%{transform:rotate(-8deg)} 94%{transform:rotate(8deg)} 98%{transform:rotate(-4deg)} }
+.notif-count { position:absolute; top:-5px; right:-5px; min-width:18px; height:18px; border-radius:9px; background:linear-gradient(135deg,#EF4444,#DC2626); color:#fff; font-size:.62rem; font-weight:800; display:flex; align-items:center; justify-content:center; padding:0 4px; border:2px solid var(--white); box-shadow:0 2px 6px rgba(220,38,38,.4); animation:popIn .3s ease; }
+@@keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
+.notif-panel { position:absolute; top:calc(100% + 10px); right:0; width:360px; background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); box-shadow:var(--shadow-lg); z-index:999; display:none; animation:dropIn .2s ease; overflow:hidden; }
+.notif-panel.open { display:flex; flex-direction:column; }
+@@keyframes dropIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:none} }
+.notif-panel-header { padding:14px 18px; border-bottom:1px solid var(--gray-100); display:flex; justify-content:space-between; align-items:center; background:var(--gray-50); }
+.notif-list { max-height:380px; overflow-y:auto; }
+.notif-item { padding:12px 16px; border-bottom:1px solid var(--gray-100); display:flex; gap:12px; align-items:flex-start; cursor:pointer; transition:background .15s ease; text-decoration:none; color:inherit; }
+.notif-item:hover { background:var(--gray-50); }
+.notif-item.unread { background:#FFFBF7; border-left:3px solid var(--orange); }
+.notif-item.unread:hover { background:#FFF7ED; }
+.notif-dot { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:.8rem; flex-shrink:0; }
+.notif-dot.type-NouvelleDemandeLocation { background:#EEF2FF; color:#6366F1; }
+.notif-dot.type-RetourTardif { background:#FEF2F2; color:#DC2626; }
+.notif-dot.type-RetourAnticipe { background:#FFFBEB; color:#D97706; }
+.notif-dot.type-SignalementDommage { background:#FEF2F2; color:#EF4444; }
+.notif-dot.type-ConfirmationLocation { background:#ECFDF5; color:#059669; }
+.notif-dot.type-DemandeRejetee { background:#FEF2F2; color:#DC2626; }
+.notif-dot.type-default { background:var(--gray-100); color:var(--gray-400); }
+.notif-titre { font-size:.82rem; font-weight:700; color:var(--navy); line-height:1.3; }
+.notif-msg { font-size:.75rem; color:var(--gray-400); margin-top:2px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.notif-date { font-size:.68rem; color:var(--gray-400); margin-top:3px; }
+.notif-panel-footer { display:block; padding:12px 18px; text-align:center; font-size:.8rem; font-weight:700; color:var(--orange); text-decoration:none; border-top:1px solid var(--gray-100); background:var(--gray-50); transition:background .15s ease; }
+.notif-panel-footer:hover { background:var(--gray-100); }
+</style>
+<script>
+// ── NOTIFICATION SYSTEM ──
+const NOTIF_ICONS = {
+    NouvelleDemandeLocation: 'fas fa-inbox',
+    RetourTardif: 'fas fa-exclamation-triangle',
+    RetourAnticipe: 'fas fa-undo',
+    SignalementDommage: 'fas fa-car-crash',
+    ConfirmationLocation: 'fas fa-check-circle',
+    DemandeRejetee: 'fas fa-times-circle',
+    Annulation: 'fas fa-ban',
+    CompteDesactive: 'fas fa-user-slash',
+    default: 'fas fa-bell'
+};
+
+async function loadNotifications() {
+    try {
+        const res = await fetch('/Notification/GetRecentes');
+        const data = await res.json();
+        const countEl = document.getElementById('notifCount');
+        const btn = document.getElementById('notifToggle');
+        const badgeDem = document.getElementById('badge-demandes');
+
+        if (data.count > 0) {
+            countEl.textContent = data.count > 99 ? '99+' : data.count;
+            countEl.style.display = 'flex';
+            btn.classList.add('has-unread');
+        } else {
+            countEl.style.display = 'none';
+            btn.classList.remove('has-unread');
+        }
+
+        // Update demandes badge
+        const demandeCount = data.notifs.filter(n => n.type === 'NouvelleDemandeLocation' && !n.estLu).length;
+        if (badgeDem && demandeCount > 0) { badgeDem.textContent = demandeCount; badgeDem.style.display = 'inline'; }
+        else if (badgeDem) { badgeDem.style.display = 'none'; }
+
+        const list = document.getElementById('notifList');
+        if (!data.notifs.length) {
+            list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--gray-400)"><i class="fas fa-bell-slash" style="font-size:1.8rem;opacity:.3;display:block;margin-bottom:8px"></i><div style="font-size:.82rem;font-weight:600">Aucune notification</div></div>';
+            return;
+        }
+        list.innerHTML = data.notifs.map(n => {
+            const icon = NOTIF_ICONS[n.type] || NOTIF_ICONS.default;
+            const typeClass = NOTIF_ICONS[n.type] ? `type-${n.type}` : 'type-default';
+            return `<a class="notif-item ${n.estLu?'':'unread'}" href="${n.lienAction||'#'}" onclick="marquerLu(${n.id})">
+                <div class="notif-dot ${typeClass}"><i class="${icon}"></i></div>
+                <div style="flex:1;min-width:0">
+                    <div class="notif-titre">${n.titre}</div>
+                    <div class="notif-msg">${n.message}</div>
+                    <div class="notif-date"><i class="fas fa-clock" style="font-size:.6rem"></i> ${n.date}</div>
+                </div>
+                ${!n.estLu ? '<div style="width:7px;height:7px;border-radius:50%;background:var(--orange);flex-shrink:0;margin-top:5px"></div>' : ''}
+            </a>`;
+        }).join('');
+    } catch(e) { console.error('Notif error:', e); }
+}
+
+async function marquerLu(id) {
+    await fetch(`/Notification/MarquerLu/${id}`, { method:'POST', headers:{'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]')?.value||''} });
+}
+
+async function toutMarquerLu() {
+    const token = document.querySelector('[name=__RequestVerificationToken]')?.value || '';
+    await fetch('/Notification/ToutMarquerLu', { method:'POST', headers:{'RequestVerificationToken': token} });
+    loadNotifications();
+}
+
+function toggleNotifPanel() {
+    const panel = document.getElementById('notifPanel');
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) loadNotifications();
+}
+
+// Close panel on outside click
+document.addEventListener('click', e => {
+    const bell = document.getElementById('notifBell');
+    if (bell && !bell.contains(e.target)) document.getElementById('notifPanel')?.classList.remove('open');
+});
+
+// Poll every 30s
+loadNotifications();
+setInterval(loadNotifications, 30000);
+</script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

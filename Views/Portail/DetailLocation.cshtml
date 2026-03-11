@@ -1,0 +1,120 @@
+@model CarRental.Models.ViewModels.LocationDetailViewModel
+@{ ViewData["Title"] = "Détail location"; Layout = "~/Views/Shared/_LayoutPortail.cshtml"; }
+
+<div style="max-width:860px;margin:40px auto;padding:0 24px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px">
+        <a href="/Portail/Espace" style="color:var(--gray-400);text-decoration:none;font-size:.85rem;font-weight:600"><i class="fas fa-arrow-left me-1"></i>Mon espace</a>
+        <span style="color:var(--gray-200)">/</span>
+        <span style="font-size:.85rem;color:var(--navy);font-weight:700">Location #@Model.Location.Id</span>
+    </div>
+
+    <!-- Status header -->
+    @{
+        var (statusBg, statusBdr, statusCol, statusLabel) = Model.Location.Statut switch {
+            "EnCours"  => ("linear-gradient(135deg,var(--navy),var(--navy-light))","transparent","#fff","En cours"),
+            "Terminée" => ("#ECFDF5","#A7F3D0","#065F46","Terminée"),
+            _          => ("var(--gray-100)","var(--gray-200)","var(--gray-600)",Model.Location.Statut)
+        };
+    }
+    <div style="background:@statusBg;border:1px solid @statusBdr;border-radius:var(--radius);padding:22px 26px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+        <div>
+            <div style="font-size:.7rem;font-weight:800;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Statut de la location</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:800;color:@statusCol">@statusLabel</div>
+        </div>
+        <div style="display:flex;gap:10px">
+            <a href="/Portail/Facture/@Model.Location.Id" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:var(--radius-sm);padding:9px 18px;font-size:.85rem;font-weight:700;color:#fff;text-decoration:none;display:flex;align-items:center;gap:7px;transition:all .2s ease"
+               onmouseenter="this.style.background='rgba(255,255,255,.22)'" onmouseleave="this.style.background='rgba(255,255,255,.12)'">
+                <i class="fas fa-file-invoice"></i> Télécharger la facture
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- LEFT -->
+        <div class="col-md-7">
+            <!-- Infos véhicule -->
+            <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow-sm)">
+                <div style="font-size:.7rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">Véhicule</div>
+                <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+                    <div style="width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg,var(--navy),var(--navy-light));display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:800;color:var(--navy);font-size:1rem">@Model.Location.Voiture?.Marque @Model.Location.Voiture?.Modele</div>
+                        <div style="font-size:.82rem;color:var(--gray-400)">@Model.Location.Voiture?.Categorie · @Model.Location.Voiture?.Immatriculation</div>
+                    </div>
+                </div>
+                @foreach (var (lbl,val) in new[]{
+                    ("Date de départ", Model.Location.DateDebut.ToString("dd MMMM yyyy")),
+                    ("Date de retour", Model.Location.DateFin.ToString("dd MMMM yyyy")),
+                    ("Durée", $"{Model.Location.NombreJours} jour(s)"),
+                    ("Tarif journalier", $"{Model.Location.Voiture?.PrixParJour:N0} DH"),
+                })
+                {
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-50)">
+                        <span style="font-size:.82rem;color:var(--gray-400)">@lbl</span>
+                        <span style="font-size:.88rem;font-weight:700;color:var(--navy)">@val</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Infos client -->
+            <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm)">
+                <div style="font-size:.7rem;font-weight:800;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">Informations personnelles</div>
+                @foreach (var (ico,lbl,val) in new[]{
+                    ("fas fa-user","Nom complet",Model.Location.Client?.NomComplet??"-"),
+                    ("fas fa-id-card","CIN",Model.Location.Client?.CIN??"-"),
+                    ("fas fa-phone","Téléphone",Model.Location.Client?.Telephone??"-"),
+                    ("fas fa-envelope","Email",Model.Location.Client?.Email??"-"),
+                })
+                {
+                    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--gray-50)">
+                        <i class="@ico" style="color:var(--orange);font-size:.8rem;width:16px;text-align:center"></i>
+                        <span style="font-size:.82rem;color:var(--gray-400);flex:0 0 100px">@lbl</span>
+                        <span style="font-size:.88rem;font-weight:700;color:var(--navy)">@val</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- RIGHT: Financial summary -->
+        <div class="col-md-5">
+            <div style="background:linear-gradient(135deg,var(--navy),var(--navy-light));border-radius:var(--radius);padding:22px;margin-bottom:16px">
+                <div style="font-size:.7rem;font-weight:800;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px">Résumé financier</div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)">
+                    <span style="font-size:.82rem;color:rgba(255,255,255,.5)">Location de base</span>
+                    <span style="font-size:.88rem;font-weight:700;color:#fff">@Model.Location.PrixTotal.ToString("N0") DH</span>
+                </div>
+                @if (Model.TotalIncidents > 0)
+                {
+                    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)">
+                        <span style="font-size:.82rem;color:#FCA5A5">Frais incidents</span>
+                        <span style="font-size:.88rem;font-weight:700;color:#FCA5A5">+@Model.TotalIncidents.ToString("N0") DH</span>
+                    </div>
+                }
+                <div style="display:flex;justify-content:space-between;padding:14px 0;margin-top:6px">
+                    <span style="font-size:.88rem;font-weight:800;color:rgba(255,255,255,.7);text-transform:uppercase">Total</span>
+                    <span style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:800;color:var(--orange-light)">@Model.TotalFacture.ToString("N0") DH</span>
+                </div>
+            </div>
+
+            <!-- Incidents -->
+            @if (Model.Incidents.Any())
+            {
+                <div style="background:var(--white);border:1.5px solid #FECACA;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-sm)">
+                    <div style="font-size:.75rem;font-weight:800;color:#DC2626;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Incidents signalés
+                    </div>
+                    @foreach(var inc in Model.Incidents)
+                    {
+                        <div style="padding:10px 0;border-bottom:1px solid #FEF2F2">
+                            <div style="font-weight:700;font-size:.85rem;color:#B91C1C">@inc.TypeIncident</div>
+                            @if (!string.IsNullOrEmpty(inc.Description)) { <div style="font-size:.78rem;color:var(--gray-400);margin-top:2px">@inc.Description</div> }
+                            @if (inc.FraisSupplementaires > 0) { <div style="font-size:.82rem;font-weight:700;color:#DC2626;margin-top:4px">@inc.FraisSupplementaires.ToString("N0") DH</div> }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

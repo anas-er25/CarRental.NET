@@ -1,0 +1,30 @@
+﻿@model Client
+@{
+    ViewData["Title"] = "Supprimer le client";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="card" style="border-color:rgba(239,68,68,.3);">
+            <div class="card-header" style="border-color:rgba(239,68,68,.3);color:#f87171;">
+                <i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+            </div>
+            <div class="card-body p-4 text-center">
+                <div style="width:64px;height:64px;border-radius:50%;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#f87171;margin:0 auto 16px;">
+                    @Model.Prenom[0]@Model.Nom[0]
+                </div>
+                <h5>@Model.NomComplet</h5>
+                <p style="color:var(--text-muted);font-size:.85rem;">CIN: @Model.CIN</p>
+                <p style="color:#f87171;font-size:.88rem;">Cette action supprimera définitivement le client.</p>
+                <form asp-action="Delete" method="post" class="d-flex gap-3 justify-content-center mt-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <button type="submit" class="btn btn-sm" style="background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 20px;font-weight:700;">
+                        <i class="fas fa-trash me-2"></i>Supprimer
+                    </button>
+                    <a href="/Client/Index" class="btn btn-outline-light btn-sm">Annuler</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

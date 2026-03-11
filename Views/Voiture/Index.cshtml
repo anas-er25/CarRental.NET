@@ -1,0 +1,97 @@
+@model IEnumerable<Voiture>
+@{ ViewData["Title"] = "Voitures"; }
+
+<div class="page-header">
+    <div>
+        <div class="page-header-title">Parc Automobile</div>
+        <div class="page-header-sub">@Model.Count() voiture(s) enregistrée(s)</div>
+    </div>
+    <a href="/Voiture/Create" class="btn-primary-custom">
+        <i class="fas fa-plus"></i> Ajouter une voiture
+    </a>
+</div>
+
+<!-- Filter bar -->
+<div class="filter-bar">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Recherche</label>
+            <div style="position:relative;">
+                <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray-400);font-size:.82rem;"></i>
+                <input type="text" name="search" class="form-control" style="padding-left:36px;" placeholder="Marque, modèle, immat..." value="@ViewBag.Search" />
+            </div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Catégorie</label>
+            <select name="categorie" class="form-select">
+                <option value="">Toutes les catégories</option>
+                <option value="Économique">Économique</option>
+                <option value="Berline">Berline</option>
+                <option value="SUV">SUV</option>
+                <option value="Luxe">Luxe</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Disponibilité</label>
+            <select name="disponible" class="form-select">
+                <option value="">Toutes</option>
+                <option value="true">Disponibles</option>
+                <option value="false">Louées</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2 align-items-end">
+            <button type="submit" class="btn-primary-custom flex-fill">Filtrer</button>
+            <a href="/Voiture/Index" class="btn-ghost">✕</a>
+        </div>
+    </form>
+</div>
+
+<!-- Cars grid -->
+@if (!Model.Any())
+{
+    <div class="card"><div class="empty-state"><i class="fas fa-car-side"></i><p>Aucune voiture trouvée</p></div></div>
+}
+else
+{
+    <div class="row g-3">
+        @{ int i = 0; }
+        @foreach (var v in Model)
+        {
+            <div class="col-md-6 col-lg-4 col-xl-3">
+                <div class="car-card s@((i % 6) + 1)" style="animation-delay:@(i * 0.06)s;">
+                    <div class="car-img-wrap">
+                        @if (v.ImagePrincipale != null)
+                        {
+                            <img src="@v.ImagePrincipale" alt="@v.Marque @v.Modele" />
+                        }
+                        else
+                        {
+                            <i class="fas fa-car no-img"></i>
+                        }
+                        <div class="status-pin">
+                            @if (v.EstDisponible) { <span class="badge-pill bp-green">Dispo</span> }
+                            else { <span class="badge-pill bp-red">Louée</span> }
+                        </div>
+                    </div>
+                    <div class="car-body">
+                        <div class="car-name">@v.Marque @v.Modele</div>
+                        <div class="car-meta">@v.Annee · @v.Immatriculation · @v.Categorie</div>
+                        <div class="car-price">@v.PrixParJour.ToString("N0") <span style="font-size:.75rem;font-weight:500;color:var(--gray-400);">DH/jour</span></div>
+                    </div>
+                    <div class="car-actions">
+                        <a href="/Voiture/Details/@v.Id" class="btn-icon view" title="Détails"><i class="fas fa-eye"></i></a>
+                        <a href="/Voiture/Edit/@v.Id" class="btn-icon edit" title="Modifier"><i class="fas fa-pen"></i></a>
+                        <a href="/Voiture/Delete/@v.Id" class="btn-icon del" title="Supprimer"><i class="fas fa-trash"></i></a>
+                        @if (v.EstDisponible)
+                        {
+                            <a href="/Location/Create?voitureId=@v.Id" class="btn-primary-custom ms-auto" style="padding:6px 12px;font-size:.78rem;">
+                                <i class="fas fa-key"></i> Louer
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+            i++;
+        }
+    </div>
+}

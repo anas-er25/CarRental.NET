@@ -1,0 +1,112 @@
+﻿@model IEnumerable<Location>
+@{
+    ViewData["Title"] = "Locations";
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-header-title">Locations</div>
+        <div class="page-header-sub">@Model.Count() contrat(s) de location</div>
+    </div>
+    <a href="/Location/Create" class="btn-primary-custom"><i class="fas fa-plus"></i> Nouvelle location</a>
+</div>
+
+<div class="status-tabs">
+    <a href="/Location/Index" class="status-tab st-all @(ViewBag.Statut == null ? "active" : "")">Toutes (@Model.Count())</a>
+    <a href="/Location/Index?statut=EnCours" class="status-tab st-orange @(ViewBag.Statut == "EnCours" ? "active" : "")">
+        En cours (@Model.Count(l => l.Statut == "EnCours"))
+    </a>
+    <a href="/Location/Index?statut=Terminée" class="status-tab st-green @(ViewBag.Statut == "Terminée" ? "active" : "")">
+        Terminées (@Model.Count(l => l.Statut == "Terminée"))
+    </a>
+    <a href="/Location/Index?statut=Annulée" class="status-tab st-gray @(ViewBag.Statut == "Annulée" ? "active" : "")">
+        Annulées (@Model.Count(l => l.Statut == "Annulée"))
+    </a>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr><th>#</th><th>Client</th><th>Voiture</th><th>Période</th><th>Jours</th><th>Location</th><th>Dommage</th><th>Total</th><th>Statut</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="10"><div class="empty-state"><i class="fas fa-file-contract"></i><p>Aucune location</p></div></td></tr>
+                }
+                @{
+                    int i = 0;
+                }
+                @foreach (var l in Model)
+                {
+                    <tr style="animation:fadeUp .4s ease @(i * 0.04)s both;">
+                        <td style="font-size:.8rem;color:var(--gray-400);">#@l.Id</td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy-light));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.7rem;color:#fff;flex-shrink:0;">
+                                    @l.Client?.Prenom[0]@l.Client?.Nom[0]
+                                </div>
+                                <span style="font-weight:700;">@l.Client?.NomComplet</span>
+                            </div>
+                        </td>
+                        <td style="color:var(--gray-600);">@l.Voiture?.Marque @l.Voiture?.Modele</td>
+                        <td style="font-size:.82rem;color:var(--gray-400);">@l.DateDebut.ToString("dd/MM/yy") → @l.DateFin.ToString("dd/MM/yy")</td>
+                        <td>
+                            <span style="background:var(--gray-100);padding:3px 8px;border-radius:6px;font-size:.8rem;font-weight:700;color:var(--gray-600);">@l.NombreJours j</span>
+                        </td>
+                        <td style="font-weight:700;color:var(--navy);">@l.PrixTotal.ToString("N0") DH</td>
+                        <td>
+                            @if (l.ADommage && l.MontantDommage > 0)
+                            {
+                                <span class="badge-pill bp-red" title="@l.DescriptionDommage">
+                                    <i class="fas fa-car-crash"></i> +@l.MontantDommage.Value.ToString("N0") DH
+                                    @if (l.DommageRembourse)
+                                    {
+                                        <i class="fas fa-check" style="color:#059669;"></i>
+                                    }
+                                </span>
+                            }
+                            else
+                            {
+
+                                <span style="color:var(--gray-400);font-size:.82rem;">—</span>
+                            }
+                        </td>
+                        <td style="font-family:'Playfair Display',serif;font-weight:700;color:var(--orange);">@l.TotalAvecDommage.ToString("N0") DH</td>
+                        <td>
+                            @if (l.Statut == "EnCours")
+                            {
+                                <span class="badge-pill bp-yellow">En cours</span>
+                            }
+                            else if (l.Statut == "Terminée")
+                            {
+
+                                <span class="badge-pill bp-green">Terminée</span>
+                            }
+                            else
+                            {
+
+                                <span class="badge-pill bp-gray">Annulée</span>
+                            }
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:5px;align-items:center;">
+                                <a href="/Location/Details/@l.Id" class="btn-icon view" title="Détails"><i class="fas fa-eye"></i></a>
+                                @if (l.Statut == "EnCours")
+                                {
+                                    <a href="/Location/Retour/@l.Id" class="btn-icon ret" title="Retour voiture"><i class="fas fa-undo"></i></a>
+                                    <form asp-action="Annuler" asp-route-id="@l.Id" method="post" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn-icon del" title="Annuler"><i class="fas fa-times"></i></button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                    i++;
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,60 @@
+﻿@model Client
+@{
+    ViewData["Title"] = "Modifier le client";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-pen me-2" style="color:var(--accent);"></i>Modifier — @Model.NomComplet
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Edit" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="DateInscription" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Nom" class="form-label"></label>
+                            <input asp-for="Nom" class="form-control" />
+                            <span asp-validation-for="Nom" class="text-danger" style="font-size:.78rem;"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Prenom" class="form-label"></label>
+                            <input asp-for="Prenom" class="form-control" />
+                            <span asp-validation-for="Prenom" class="text-danger" style="font-size:.78rem;"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="CIN" class="form-label"></label>
+                            <input asp-for="CIN" class="form-control" />
+                            <span asp-validation-for="CIN" class="text-danger" style="font-size:.78rem;"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Telephone" class="form-label"></label>
+                            <input asp-for="Telephone" class="form-control" />
+                            <span asp-validation-for="Telephone" class="text-danger" style="font-size:.78rem;"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" type="email" />
+                            <span asp-validation-for="Email" class="text-danger" style="font-size:.78rem;"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Adresse" class="form-label"></label>
+                            <input asp-for="Adresse" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3 mt-4">
+                        <button type="submit" class="btn btn-accent"><i class="fas fa-save me-2"></i>Mettre à jour</button>
+                        <a href="/Client/Index" class="btn btn-outline-light">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
