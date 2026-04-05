@@ -207,12 +207,11 @@
 
 @section Scripts {
     <script>
-        const basePrix = @Model.Location.PrixTotal;
-        const penalite = @penalite;
-        const prixJour = @(Model.Location.Voiture?.PrixParJour ?? 0);
+        const basePrix = @Model.Location.PrixTotal.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const penalite = @penalite.ToString(System.Globalization.CultureInfo.InvariantCulture);
         let hasDamage = false;
 
-        function toggleDamage(val) {
+        window.toggleDamage = function (val) {
             hasDamage = val;
             document.getElementById(val ? 'yesDamage' : 'noDamage').checked = true;
 
@@ -237,7 +236,7 @@
             updateTotal();
         }
 
-        function updateTotal() {
+        window.updateTotal = function () {
             const frais = parseFloat(document.getElementById('fraisIncident')?.value || 0);
             const total = basePrix + penalite + (hasDamage ? frais : 0);
             document.getElementById('totalFinal').textContent = total.toLocaleString('fr-MA') + ' DH';
